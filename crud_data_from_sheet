@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets API - Apps Script</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .setup-section {
+        background: #f0f7ff;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        border-left: 4px solid #1e3c72;
+      }
+
+      .setup-section h3 {
+        color: #1e3c72;
+        margin-bottom: 15px;
+      }
+
+      .setup-steps {
+        list-style: none;
+        padding: 0;
+      }
+
+      .setup-steps li {
+        padding: 10px;
+        background: white;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+
+      .setup-steps li:before {
+        content: "🔧 ";
+        margin-right: 5px;
+      }
+
+      .setup-steps li.completed:before {
+        content: "✅ ";
+      }
+
+      .api-url {
+        background: #1e3c72;
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 15px 0;
+        word-break: break-all;
+        font-family: monospace;
+      }
+
+      .form-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+      }
+
+      .form-section h2 {
+        color: #1e3c72;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+        font-weight: 500;
+      }
+
+      input, select, textarea {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+      }
+
+      input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #1e3c72;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 500;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(30, 60, 114, 0.4);
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #5a6268;
+      }
+
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #218838;
+      }
+
+      .result-section {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+      }
+
+      .result-section h2 {
+        color: #1e3c72;
+        margin-bottom: 20px;
+      }
+
+      .response-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        font-weight: 500;
+      }
+
+      tr:hover {
+        background-color: #f5f5f5;
+      }
+
+      .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #1e3c72;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .footer {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-top: 1px solid #ddd;
+        color: #666;
+      }
+
+      .note {
+        background: #fff3cd;
+        color: #856404;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+        border-left: 4px solid #ffc107;
+      }
+
+      .filter-item {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        align-items: center;
+      }
+
+      .filter-item input {
+        flex: 1;
+      }
+
+      .filter-item button {
+        padding: 10px 15px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .filter-item button:hover {
+        background: #c82333;
+      }
+
+      .add-filter {
+        margin-top: 10px;
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .add-filter:hover {
+        background: #218838;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📊 Google Sheets API</h1>
+        <p>ด้วย Google Apps Script (doPost)</p>
+      </div>
+
+      <div class="content">
+        <div class="setup-section">
+          <h3>🔧 การตั้งค่าเบื้องต้น</h3>
+          <ol class="setup-steps" id="setupSteps">
+            <li>รันฟังก์ชัน <code>setSpreadsheetId()</code> ใน Apps Script Editor เพื่อตั้งค่า Spreadsheet ID</li>
+            <li>รันฟังก์ชัน <code>setApiToken()</code> เพื่อตั้งค่า API Token</li>
+            <li>Deploy เป็น Web App (Execute as: Me, Access: Anyone)</li>
+          </ol>
+          
+          <div class="api-url" id="apiUrl">
+            คลิกปุ่ม "Get URL" เพื่อดู API URL
+          </div>
+          
+          <button class="btn btn-secondary" onclick="getApiUrl()">
+            🔗 Get API URL
+          </button>
+        </div>
+
+        <div class="form-section">
+          <h2>⚙️ ทดสอบเรียก API</h2>
+          
+          <div class="note">
+            💡 ข้อมูลในฟอร์มนี้จะถูกส่งไปยัง API ของคุณโดยตรง
+          </div>
+
+          <div class="form-group">
+            <label for="apiUrl">API URL:</label>
+            <input type="url" id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+          </div>
+
+          <div class="form-group">
+            <label for="token">Token *</label>
+            <input type="password" id="token" value="your-token-here" placeholder="กรอก API Token">
+          </div>
+
+          <div class="form-group">
+            <label for="sheetName">Sheet Name *</label>
+            <select id="sheetName">
+              <option value="">เลือก Sheet</option>
+              <option value="Sheet1">Sheet1</option>
+              <option value="Sheet2">Sheet2</option>
+              <option value="Sheet3">Sheet3</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="id">ID (ค้นหาตาม ID)</label>
+            <input type="text" id="id" placeholder="กรองตาม ID (ไม่บังคับ)">
+          </div>
+
+          <div class="form-group">
+            <label>Options</label>
+            <div style="margin-left: 20px;">
+              <div class="form-group">
+                <label for="limit">Limit:</label>
+                <input type="number" id="limit" min="1" placeholder="จำนวนข้อมูล">
+              </div>
+              
+              <div class="form-group">
+                <label for="offset">Offset:</label>
+                <input type="number" id="offset" min="0" value="0">
+              </div>
+
+              <div class="form-group">
+                <label>Filters:</label>
+                <div id="filtersContainer"></div>
+                <button type="button" class="add-filter" onclick="addFilter()">
+                  ➕ เพิ่มตัวกรอง
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button class="btn btn-primary" onclick="fetchData()">
+              🔍 ดึงข้อมูล
+            </button>
+            <button class="btn btn-secondary" onclick="clearForm()">
+              🗑️ ล้างฟอร์ม
+            </button>
+          </div>
+        </div>
+
+        <div id="loading" class="loading">
+          <div class="spinner"></div>
+          <p style="margin-top: 10px;">กำลังโหลดข้อมูล...</p>
+        </div>
+
+        <div id="error" class="error-message" style="display: none;"></div>
+
+        <div class="result-section">
+          <h2>📋 ผลลัพธ์</h2>
+          <div class="response-info">
+            <strong>Status:</strong> <span id="status">-</span><br>
+            <strong>Message:</strong> <span id="message">-</span><br>
+            <strong>จำนวนข้อมูล:</strong> <span id="count">0</span> รายการ
+          </div>
+
+          <div class="table-container">
+            <table id="resultTable">
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Data</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr>
+                  <td colspan="2" style="text-align: center; color: #666;">
+                    ยังไม่มีข้อมูล กรุณาดึงข้อมูลก่อน
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>Google Apps Script API Demo | doPost() Method</p>
+      </div>
+    </div>
+
+    <script>
+      let filterCount = 0;
+
+      function addFilter() {
+        const container = document.getElementById('filtersContainer');
+        filterCount++;
+        
+        const filterDiv = document.createElement('div');
+        filterDiv.className = 'filter-item';
+        filterDiv.id = `filter-${filterCount}`;
+        
+        filterDiv.innerHTML = `
+          <input type="text" class="filter-key" placeholder="ชื่อคอลัมน์ (เช่น name)">
+          <input type="text" class="filter-value" placeholder="ค่าที่ต้องการกรอง">
+          <button type="button" onclick="removeFilter(${filterCount})">ลบ</button>
+        `;
+        
+        container.appendChild(filterDiv);
+      }
+
+      function removeFilter(id) {
+        const filterDiv = document.getElementById(`filter-${id}`);
+        if (filterDiv) {
+          filterDiv.remove();
+        }
+      }
+
+      function getApiUrl() {
+        if (google && google.script && google.script.run) {
+          google.script.run.withSuccessHandler(function(url) {
+            document.getElementById('apiUrl').textContent = url;
+            document.getElementById('apiUrlInput').value = url;
+          }).getDeployedUrl();
+        } else {
+          alert('กรุณา deploy เป็น Web App ก่อนใช้งาน');
+        }
+      }
+
+      function buildPayload() {
+        const filters = {};
+        const filterItems = document.querySelectorAll('.filter-item');
+        
+        filterItems.forEach(item => {
+          const key = item.querySelector('.filter-key').value;
+          const value = item.querySelector('.filter-value').value;
+          if (key && value) {
+            filters[key] = value;
+          }
+        });
+
+        const options = {};
+        
+        const limit = document.getElementById('limit').value;
+        if (limit) options.limit = parseInt(limit);
+        
+        const offset = document.getElementById('offset').value;
+        if (offset) options.offset = parseInt(offset);
+        
+        if (Object.keys(filters).length > 0) {
+          options.filters = filters;
+        }
+
+        return {
+          token: document.getElementById('token').value,
+          sheetName: document.getElementById('sheetName').value,
+          id: document.getElementById('id').value || undefined,
+          options: options
+        };
+      }
+
+      async function fetchData() {
+        if (!document.getElementById('token').value || !document.getElementById('sheetName').value) {
+          alert('กรุณากรอก Token และเลือก Sheet Name');
+          return;
+        }
+
+        const apiUrl = document.getElementById('apiUrlInput').value;
+        if (!apiUrl) {
+          alert('กรุณากรอก API URL หรือคลิก Get API URL');
+          return;
+        }
+
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('error').style.display = 'none';
+
+        try {
+          const payload = buildPayload();
+          
+          console.log('Sending payload:', payload);
+
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            mode: 'no-cors', // สำหรับ Google Apps Script
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+          });
+
+          // เนื่องจาก Google Apps Script response มีปัญหาเรื่อง CORS
+          // เราใช้วิธี redirect ไปที่ HTML แทน
+          if (response.type === 'opaque') {
+            document.getElementById('status').textContent = '202';
+            document.getElementById('message').textContent = 'Request sent (CORS mode)';
+            document.getElementById('count').textContent = '?';
+            document.getElementById('tableBody').innerHTML = `
+              <tr>
+                <td colspan="2" style="text-align: center;">
+                  ⚠️ การเรียก API ผ่าน Browser โดยตรงอาจมีปัญหา CORS<br>
+                  แนะนำให้ใช้ Apps Script Editor หรือ Postman ทดสอบแทน
+                </td>
+              </tr>
+            `;
+          } else {
+            const result = await response.json();
+            
+            document.getElementById('status').textContent = response.status;
+            document.getElementById('message').textContent = result.message || '-';
+            
+            if (result.success) {
+              document.getElementById('count').textContent = result.count || result.data.length;
+              displayData(result.data || []);
+            } else {
+              showError(result.message);
+            }
+          }
+
+        } catch (error) {
+          console.error('Error:', error);
+          showError('เกิดข้อผิดพลาด: ' + error.message);
+        } finally {
+          document.getElementById('loading').style.display = 'none';
+        }
+      }
+
+      function displayData(data) {
+        const tableBody = document.getElementById('tableBody');
+        
+        if (!data || data.length === 0) {
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="2" style="text-align: center; color: #666;">
+                ไม่พบข้อมูล
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        const headers = Object.keys(data[0]);
+        
+        const tableHead = document.querySelector('#resultTable thead tr');
+        tableHead.innerHTML = '<th>No.</th>';
+        headers.forEach(header => {
+          tableHead.innerHTML += `<th>${header}</th>`;
+        });
+
+        tableBody.innerHTML = '';
+        data.forEach((item, index) => {
+          let row = '<tr>';
+          row += `<td>${index + 1}</td>`;
+          headers.forEach(header => {
+            row += `<td>${item[header] || '-'}</td>`;
+          });
+          row += '</tr>';
+          tableBody.innerHTML += row;
+        });
+      }
+
+      function showError(message) {
+        const errorDiv = document.getElementById('error');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        
+        document.getElementById('status').textContent = 'Error';
+        document.getElementById('message').textContent = message;
+        document.getElementById('count').textContent = '0';
+        
+        document.getElementById('tableBody').innerHTML = `
+          <tr>
+            <td colspan="2" style="text-align: center; color: #666;">
+              ไม่สามารถแสดงข้อมูลได้
+            </td>
+          </tr>
+        `;
+      }
+
+      function clearForm() {
+        document.getElementById('token').value = '';
+        document.getElementById('sheetName').value = '';
+        document.getElementById('id').value = '';
+        document.getElementById('limit').value = '';
+        document.getElementById('offset').value = '0';
+        document.getElementById('filtersContainer').innerHTML = '';
+        document.getElementById('error').style.display = 'none';
+        document.getElementById('status').textContent = '-';
+        document.getElementById('message').textContent = '-';
+        document.getElementById('count').textContent = '0';
+        document.getElementById('tableBody').innerHTML = `
+          <tr>
+            <td colspan="2" style="text-align: center; color: #666;">
+              ยังไม่มีข้อมูล กรุณาดึงข้อมูลก่อน
+            </td>
+          </tr>
+        `;
+      }
+
+      // เพิ่ม filter เริ่มต้น 1 อัน
+      addFilter();
+    </script>
+  </body>
+</html>
