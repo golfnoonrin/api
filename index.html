@@ -3,1708 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets API Client - AG Grid + Bootstrap 5</title>
+    <title>Google Sheets API Client - Bootstrap 5 & AG Grid</title>
     
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- AG Grid CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.3/styles/ag-grid.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.3/styles/ag-theme-alpine.min.css">
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+
     <style>
-        :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --sidebar-width: 280px;
-        }
-
         body {
-            background: #f8f9fa;
             font-family: 'Sarabun', sans-serif;
-            overflow-x: hidden;
+            background-color: #f4f7f6;
         }
-
-        .wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--primary-gradient);
+        .header-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            transition: all 0.3s;
-            z-index: 1000;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 1.5rem 1.5rem;
         }
-
-        .sidebar-header {
-            padding: 30px 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+        #myGrid {
+            height: 500px;
+            width: 100%;
         }
-
-        .sidebar-header h3 {
-            font-weight: 600;
-            margin-top: 15px;
-            font-size: 1.5rem;
-        }
-
-        .sidebar-header p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-bottom: 0;
-        }
-
-        .sidebar .nav-link {
-            color: rgba(255,255,255,0.8);
-            padding: 15px 25px;
-            font-size: 1rem;
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
-        }
-
-        .sidebar .nav-link:hover {
-            color: white;
-            background: rgba(255,255,255,0.1);
-            border-left-color: white;
-        }
-
-        .sidebar .nav-link.active {
-            color: white;
-            background: rgba(255,255,255,0.15);
-            border-left-color: white;
-        }
-
-        .sidebar .nav-link i {
-            margin-right: 10px;
-            width: 24px;
-            text-align: center;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            padding: 30px;
-            transition: all 0.3s;
-        }
-
-        /* Top Navigation */
-        .top-navbar {
-            background: white;
-            border-radius: 15px;
-            padding: 15px 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #333;
-            margin: 0;
-        }
-
-        .page-title i {
-            color: #667eea;
-            margin-right: 10px;
-        }
-
-        .token-badge {
-            background: var(--primary-gradient);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
-        }
-
-        .token-badge i {
-            margin-right: 8px;
-        }
-
-        /* Cards */
         .card {
             border: none;
             border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-            transition: transform 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-
-        .card-header {
-            background: white;
-            border-bottom: 1px solid #eee;
-            padding: 20px 25px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            border-radius: 15px 15px 0 0 !important;
-        }
-
-        .card-header i {
-            color: #667eea;
-            margin-right: 10px;
-        }
-
-        .card-body {
-            padding: 25px;
-        }
-
-        /* Forms */
-        .form-label {
-            font-weight: 500;
-            color: #555;
-            margin-bottom: 8px;
-        }
-
-        .form-control, .form-select {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 10px 15px;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 10px 25px;
-            border-radius: 10px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: var(--primary-gradient);
-            border: none;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-outline-primary {
-            border: 2px solid #667eea;
-            color: #667eea;
-        }
-
-        .btn-outline-primary:hover {
-            background: var(--primary-gradient);
-            border-color: transparent;
-            color: white;
-        }
-
-        /* AG Grid Customization */
-        .ag-theme-alpine {
-            --ag-header-background-color: var(--primary-gradient);
-            --ag-header-foreground-color: white;
-            --ag-header-cell-hover-background-color: rgba(255,255,255,0.1);
-            --ag-header-cell-moving-background-color: rgba(255,255,255,0.1);
-            --ag-border-color: #e9ecef;
-            --ag-row-hover-color: #f8f9fa;
-            --ag-selected-row-background-color: rgba(102, 126, 234, 0.1);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .ag-theme-alpine .ag-header {
-            font-weight: 600;
-            border-bottom: none;
-        }
-
-        .ag-theme-alpine .ag-header-cell {
-            padding: 0 15px;
-        }
-
-        .ag-theme-alpine .ag-row {
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .ag-theme-alpine .ag-cell {
-            padding: 0 15px;
-            line-height: 50px;
-        }
-
-        /* Stats Cards */
-        .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            height: 100%;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--primary-gradient);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-        }
-
-        .stat-label {
-            color: #888;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 0;
-        }
-
-        /* JSON Viewer */
-        .json-viewer {
-            background: #1e1e2f;
-            color: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            overflow-x: auto;
+        .json-view {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
             max-height: 400px;
-        }
-
-        /* Loading Spinner */
-        .spinner-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255,255,255,0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .spinner-container {
-            text-align: center;
-        }
-
-        .spinner-border {
-            width: 3rem;
-            height: 3rem;
-            color: #667eea;
-        }
-
-        /* Quick Filter */
-        .quick-filter {
-            position: relative;
-        }
-
-        .quick-filter i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-        }
-
-        .quick-filter input {
-            padding-left: 40px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                margin-left: -280px;
-            }
-            .sidebar.active {
-                margin-left: 0;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .main-content.active {
-                margin-left: 280px;
-            }
-        }
-
-        /* Filter Tags */
-        .filter-tag {
-            background: #e9ecef;
-            border-radius: 20px;
-            padding: 5px 15px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-        }
-
-        .filter-tag i {
-            cursor: pointer;
-            color: #999;
-            transition: color 0.3s;
-        }
-
-        .filter-tag i:hover {
-            color: #dc3545;
-        }
-
-        /* Chart Container */
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-        }
-
-        .toast {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            margin-bottom: 10px;
-            min-width: 300px;
-        }
-
-        .toast.success {
-            border-left: 4px solid #28a745;
-        }
-
-        .toast.error {
-            border-left: 4px solid #dc3545;
-        }
-
-        .toast.warning {
-            border-left: 4px solid #ffc107;
-        }
-
-        .toast.info {
-            border-left: 4px solid #17a2b8;
+            overflow: auto;
         }
     </style>
 </head>
 <body>
-    <!-- Loading Spinner -->
-    <div class="spinner-overlay" id="loadingSpinner">
-        <div class="spinner-container">
-            <div class="spinner-border mb-3" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <h5 class="text-primary">กำลังโหลดข้อมูล...</h5>
+
+    <div class="header-gradient text-center">
+        <div class="container">
+            <h1>📊 Google Sheets API Client</h1>
+            <p class="lead">จัดการข้อมูลจาก Google Sheets ด้วย AG Grid & Bootstrap 5</p>
         </div>
     </div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <div class="wrapper">
-        <!-- Sidebar -->
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <i class="fas fa-database fa-3x mb-3"></i>
-                <h3>Sheets API Client</h3>
-                <p>Google Sheets + AG Grid</p>
-            </div>
-
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link active" href="#" onclick="showSection('dashboard', event)">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="showSection('data', event)">
-                        <i class="fas fa-table"></i> ข้อมูลทั้งหมด
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="showSection('analytics', event)">
-                        <i class="fas fa-chart-bar"></i> การวิเคราะห์
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="showSection('api', event)">
-                        <i class="fas fa-code"></i> API Docs
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="showSection('settings', event)">
-                        <i class="fas fa-cog"></i> ตั้งค่า
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="main-content" id="mainContent">
-            <!-- Top Navigation -->
-            <div class="top-navbar">
-                <h4 class="page-title">
-                    <i class="fas fa-chart-line"></i>
-                    <span id="pageTitle">Dashboard</span>
-                </h4>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="token-badge">
-                        <i class="fas fa-key"></i>
-                        <span id="tokenDisplay">test_token_123</span>
+    <div class="container mb-5">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-4">🔍 ตัวกรองและตั้งค่า</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">🔑 Token</label>
+                        <input type="text" id="token" class="form-control" value="test_token_123">
                     </div>
-                    <button class="btn btn-sm btn-outline-primary d-md-none" onclick="toggleSidebar()">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Dashboard Section -->
-            <div id="dashboardSection" class="content-section">
-                <div class="row g-4 mb-4">
-                    <div class="col-xl-3 col-md-6">
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-database"></i>
-                            </div>
-                            <div class="stat-label">ข้อมูลทั้งหมด</div>
-                            <div class="stat-value" id="totalRecords">0</div>
-                        </div>
+                    <div class="col-md-4">
+                        <label class="form-label">📄 Sheet Name</label>
+                        <input type="text" id="sheetName" class="form-control" value="Sheet1">
                     </div>
-                    <div class="col-xl-3 col-md-6">
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-columns"></i>
-                            </div>
-                            <div class="stat-label">จำนวนคอลัมน์</div>
-                            <div class="stat-value" id="totalColumns">0</div>
-                        </div>
+                    <div class="col-md-4">
+                        <label class="form-label">🆔 ID Filter</label>
+                        <input type="text" id="idFilter" class="form-control" placeholder="ค้นหาด้วย ID">
                     </div>
-                    <div class="col-xl-3 col-md-6">
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="stat-label">อัพเดตล่าสุด</div>
-                            <div class="stat-value" id="lastUpdate">-</div>
-                        </div>
+                    <div class="col-md-6">
+                        <label class="form-label">🔎 ค้นหาทั่วไป (Global Search)</label>
+                        <input type="text" id="globalSearch" class="form-control" placeholder="พิมพ์เพื่อค้นหา..." oninput="onQuickFilterChanged()">
                     </div>
-                    <div class="col-xl-3 col-md-6">
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div class="stat-label">สถานะ</div>
-                            <div class="stat-value text-success" id="apiStatus">พร้อมใช้งาน</div>
-                        </div>
+                    <div class="col-md-3">
+                        <label class="form-label">📌 ขีดจำกัด (Limit)</label>
+                        <input type="number" id="limit" class="form-control" value="100">
                     </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <i class="fas fa-chart-bar"></i> ภาพรวมข้อมูล
-                            </div>
-                            <div class="card-body">
-                                <div class="chart-container">
-                                    <canvas id="dataChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <i class="fas fa-table"></i> ข้อมูลล่าสุด
-                            </div>
-                            <div class="card-body p-0">
-                                <div id="previewGrid" class="ag-theme-alpine" style="height: 400px; width: 100%;"></div>
-                            </div>
-                        </div>
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button class="btn btn-primary w-100" onclick="fetchData()">📥 ดึงข้อมูล</button>
+                        <button class="btn btn-outline-secondary" onclick="exportToCSV()">📊 CSV</button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Data Section -->
-            <div id="dataSection" class="content-section" style="display: none;">
-                <!-- Filter Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fas fa-filter"></i> ตัวกรองข้อมูล
-                            </div>
-                            <div>
-                                <span class="badge bg-primary" id="activeFiltersCount">0 ตัวกรอง</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <label class="form-label">🔑 Token</label>
-                                <input type="text" class="form-control" id="token" value="test_token_123">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">📄 Sheet Name</label>
-                                <input type="text" class="form-control" id="sheetName" value="Sheet1">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">🆔 ID Filter</label>
-                                <input type="text" class="form-control" id="idFilter" placeholder="Filter by ID">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">📊 จำนวนต่อหน้า</label>
-                                <select class="form-select" id="pageSize">
-                                    <option value="10">10 รายการ</option>
-                                    <option value="25">25 รายการ</option>
-                                    <option value="50">50 รายการ</option>
-                                    <option value="100">100 รายการ</option>
-                                    <option value="500">500 รายการ</option>
-                                </select>
-                            </div>
-                        </div>
+        <div class="card mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold">📋 ตารางข้อมูล</span>
+                <span class="badge bg-primary" id="resultCount">0 รายการ</span>
+            </div>
+            <div class="card-body">
+                <div id="myGrid" class="ag-theme-alpine"></div>
+            </div>
+        </div>
 
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <div class="quick-filter">
-                                    <i class="fas fa-search"></i>
-                                    <input type="text" class="form-control" id="quickFilter" 
-                                           placeholder="ค้นหาอย่างรวดเร็ว... (ค้นหาทุกคอลัมน์)">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <h6 class="fw-bold mb-3">🎯 ตัวกรองเฉพาะคอลัมน์</h6>
-                                <div class="row g-3" id="dynamicFilters">
-                                    <!-- Filters will be added dynamically -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-2 mt-4 flex-wrap">
-                            <button class="btn btn-primary" onclick="fetchData()">
-                                <i class="fas fa-search me-2"></i>ค้นหาข้อมูล
-                            </button>
-                            <button class="btn btn-outline-secondary" onclick="resetFilters()">
-                                <i class="fas fa-undo me-2"></i>รีเซ็ต
-                            </button>
-                            <button class="btn btn-success" onclick="exportToCSV()">
-                                <i class="fas fa-download me-2"></i>Export CSV
-                            </button>
-                            <button class="btn btn-info text-white" onclick="exportToExcel()">
-                                <i class="fas fa-file-excel me-2"></i>Export Excel
-                            </button>
-                            <button class="btn btn-warning text-white" onclick="refreshData()">
-                                <i class="fas fa-sync-alt me-2"></i>รีเฟรช
-                            </button>
-                        </div>
-
-                        <!-- Active Filters Tags -->
-                        <div class="mt-3" id="activeFiltersTags"></div>
-                    </div>
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="raw-tab" data-bs-toggle="tab" data-bs-target="#raw" type="button">Raw JSON</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="curl-tab" data-bs-toggle="tab" data-bs-target="#curl" type="button">cURL Command</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body tab-content">
+                <div class="tab-pane fade show active" id="raw">
+                    <pre class="json-view" id="rawJson">{}</pre>
                 </div>
-
-                <!-- AG Grid Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fas fa-table me-2"></i>ผลลัพธ์
-                            </div>
-                            <div>
-                                <span class="badge bg-primary me-2" id="selectedCount">0 selected</span>
-                                <span class="badge bg-secondary" id="totalCount">0 total</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div id="dataGrid" class="ag-theme-alpine" style="height: 600px; width: 100%;"></div>
-                    </div>
-                    <div class="card-footer bg-white">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                            <div class="text-muted" id="paginationInfo">
-                                แสดง 0 - 0 จากทั้งหมด 0 รายการ
-                            </div>
-                            <nav>
-                                <ul class="pagination mb-0">
-                                    <li class="page-item" id="firstPageItem">
-                                        <a class="page-link" href="#" onclick="goToPage('first')">
-                                            <i class="fas fa-angle-double-left"></i>
-                                        </a>
-                                    </li>
-                                    <li class="page-item" id="prevPageItem">
-                                        <a class="page-link" href="#" onclick="goToPage('prev')">
-                                            <i class="fas fa-chevron-left"></i>
-                                        </a>
-                                    </li>
-                                    <li class="page-item" id="pageInfo">
-                                        <span class="page-link" id="currentPageDisplay">1</span>
-                                    </li>
-                                    <li class="page-item" id="nextPageItem">
-                                        <a class="page-link" href="#" onclick="goToPage('next')">
-                                            <i class="fas fa-chevron-right"></i>
-                                        </a>
-                                    </li>
-                                    <li class="page-item" id="lastPageItem">
-                                        <a class="page-link" href="#" onclick="goToPage('last')">
-                                            <i class="fas fa-angle-double-right"></i>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- API Response Tabs -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <ul class="nav nav-tabs card-header-tabs" id="responseTabs" role="tablist">
-                            <li class="nav-item">
-                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#raw">
-                                    <i class="fas fa-code me-2"></i>Raw JSON
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#curl">
-                                    <i class="fas fa-terminal me-2"></i>cURL
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#stats">
-                                    <i class="fas fa-chart-pie me-2"></i>สถิติ
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="card-body">
-                        <div class="tab-content">
-                            <div class="tab-pane fade show active" id="raw">
-                                <div class="json-viewer" id="rawJson">{}</div>
-                            </div>
-                            <div class="tab-pane fade" id="curl">
-                                <div class="json-viewer" id="curlCommand"></div>
-                            </div>
-                            <div class="tab-pane fade" id="stats">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <canvas id="statsChart"></canvas>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div id="columnStats"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="tab-pane fade" id="curl">
+                    <pre class="json-view" id="curlCommand">Waiting for request...</pre>
                 </div>
             </div>
-
-            <!-- Analytics Section -->
-            <div id="analyticsSection" class="content-section" style="display: none;">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-chart-pie me-2"></i>การวิเคราะห์ข้อมูล
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-4">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h6 class="fw-bold">การกระจายตัวของข้อมูล</h6>
-                                        <canvas id="distributionChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-4">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h6 class="fw-bold">สถิติแต่ละคอลัมน์</h6>
-                                        <div id="columnAnalytics" style="max-height: 400px; overflow-y: auto;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- API Documentation Section -->
-            <div id="apiSection" class="content-section" style="display: none;">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-book me-2"></i>API Documentation
-                    </div>
-                    <div class="card-body">
-                        <h5 class="mb-3">📌 Endpoint</h5>
-                        <div class="bg-light p-3 rounded mb-4">
-                            <code class="d-block">POST https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec</code>
-                        </div>
-
-                        <h5 class="mb-3">📦 Request Format</h5>
-                        <div class="bg-light p-3 rounded mb-4">
-                            <pre class="mb-0">{
-  "token": "test_token_123",
-  "sheetName": "Sheet1",
-  "id": "optional_id",
-  "options": {
-    "limit": 10,
-    "offset": 0,
-    "filters": {
-      "column1": "value1",
-      "column2": "value2"
-    }
-  }
-}</pre>
-                        </div>
-
-                        <h5 class="mb-3">✅ Response Format</h5>
-                        <div class="bg-light p-3 rounded mb-4">
-                            <pre class="mb-0">{
-  "success": true,
-  "data": [...],
-  "total": 100,
-  "limit": 10,
-  "offset": 0
-}</pre>
-                        </div>
-
-                        <h5 class="mb-3">🔧 ตัวอย่างการใช้งาน</h5>
-                        <ul class="nav nav-pills mb-3" id="codeExampleTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#jsExample">JavaScript</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#pythonExample">Python</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#phpExample">PHP</button>
-                            </li>
-                        </ul>
-                        
-                        <div class="tab-content">
-                            <div class="tab-pane fade show active" id="jsExample">
-                                <pre class="bg-light p-3 rounded">fetch(apiUrl, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    token: 'test_token_123',
-    sheetName: 'Sheet1',
-    options: { limit: 10 }
-  })
-})
-.then(response => response.json())
-.then(data => console.log(data));</pre>
-                            </div>
-                            <div class="tab-pane fade" id="pythonExample">
-                                <pre class="bg-light p-3 rounded">import requests
-import json
-
-url = "https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec"
-payload = {
-    "token": "test_token_123",
-    "sheetName": "Sheet1",
-    "options": {"limit": 10}
-}
-response = requests.post(url, json=payload)
-print(response.json())</pre>
-                            </div>
-                            <div class="tab-pane fade" id="phpExample">
-                                <pre class="bg-light p-3 rounded">&lt;?php
-$url = "https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec";
-$data = [
-    "token" => "test_token_123",
-    "sheetName" => "Sheet1",
-    "options" => ["limit" => 10]
-];
-
-$options = [
-    "http" => [
-        "header" => "Content-Type: application/json",
-        "method" => "POST",
-        "content" => json_encode($data)
-    ]
-];
-
-$context = stream_context_create($options);
-$result = file_get_contents($url, false, $context);
-echo $result;
-?&gt;</pre>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Section -->
-            <div id="settingsSection" class="content-section" style="display: none;">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-cog me-2"></i>ตั้งค่า
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">API Token</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="settingToken" value="test_token_123">
-                                <button class="btn btn-outline-primary" onclick="saveToken()">
-                                    <i class="fas fa-save me-2"></i>บันทึก
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Default Sheet</label>
-                            <input type="text" class="form-control" id="defaultSheet" value="Sheet1">
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Auto Refresh (วินาที)</label>
-                            <select class="form-select" id="autoRefresh">
-                                <option value="0">ปิด</option>
-                                <option value="30">30 วินาที</option>
-                                <option value="60">1 นาที</option>
-                                <option value="300">5 นาที</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">รูปแบบวันที่</label>
-                            <select class="form-select" id="dateFormat">
-                                <option value="th">ไทย (วัน/เดือน/ปี)</option>
-                                <option value="en">อังกฤษ (YYYY-MM-DD)</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">ธีม</label>
-                            <select class="form-select" id="theme">
-                                <option value="light">สว่าง</option>
-                                <option value="dark">มืด</option>
-                            </select>
-                        </div>
-
-                        <button class="btn btn-primary" onclick="saveSettings()">
-                            <i class="fas fa-check me-2"></i>บันทึกการตั้งค่า
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </main>
+        </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.3/dist/ag-grid-community.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    
-    <script>
-        // Global variables
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec';
-        let gridApi = null;
-        let previewGridApi = null;
-        let gridColumnApi = null;
-        let currentData = [];
-        let originalData = [];
-        let totalRecords = 0;
-        let currentPage = 1;
-        let pageSize = 10;
-        let totalPages = 1;
-        let chart = null;
-        let statsChart = null;
-        let distributionChart = null;
-        let autoRefreshTimer = null;
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
 
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeAGGrid();
-            loadSettings();
-            fetchData();
-            
-            // Setup quick filter
-            document.getElementById('quickFilter').addEventListener('input', function() {
-                if (gridApi) {
-                    gridApi.setQuickFilter(this.value);
-                }
-            });
-        });
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec';
+        
+        let gridOptions = {
+            columnDefs: [],
+            rowData: [],
+            defaultColDef: {
+                sortable: true,
+                filter: true,
+                resizable: true,
+                flex: 1,
+                minWidth: 100
+            },
+            pagination: true,
+            paginationPageSize: 10,
+            overlayLoadingTemplate: '<span class="ag-overlay-loading-center">กำลังดึงข้อมูลจาก Google Sheets...</span>',
+        };
 
         // Initialize AG Grid
-        function initializeAGGrid() {
-            const gridOptions = {
-                columnDefs: [],
-                rowData: [],
-                defaultColDef: {
-                    sortable: true,
-                    filter: true,
-                    resizable: true,
-                    floatingFilter: true,
-                    editable: false,
-                    flex: 1,
-                    minWidth: 100,
-                    filterParams: {
-                        buttons: ['reset', 'apply'],
-                        closeOnApply: true,
-                    }
-                },
-                pagination: false,
-                rowSelection: 'multiple',
-                animateRows: true,
-                enableCellTextSelection: true,
-                ensureDomOrder: true,
-                enableRangeSelection: true,
-                onSelectionChanged: onSelectionChanged,
-                onFilterChanged: onFilterChanged,
-                onSortChanged: onSortChanged,
-                onGridReady: function(params) {
-                    gridApi = params.api;
-                    gridColumnApi = params.columnApi;
+        const gridDiv = document.querySelector('#myGrid');
+        new agGrid.Grid(gridDiv, gridOptions);
+
+        async function fetchData() {
+            gridOptions.api.showLoadingOverlay();
+            
+            const payload = {
+                token: document.getElementById('token').value,
+                sheetName: document.getElementById('sheetName').value,
+                options: {
+                    limit: parseInt(document.getElementById('limit').value),
+                    filters: {}
                 }
             };
 
-            // Create main grid
-            const gridDiv = document.querySelector('#dataGrid');
-            new agGrid.Grid(gridDiv, gridOptions);
+            const idVal = document.getElementById('idFilter').value;
+            if (idVal) payload.id = idVal;
 
-            // Create preview grid
-            const previewGridOptions = {
-                columnDefs: [],
-                rowData: [],
-                defaultColDef: {
-                    sortable: true,
-                    filter: true,
-                    resizable: true,
-                    flex: 1,
-                    minWidth: 100
-                },
-                onGridReady: function(params) {
-                    previewGridApi = params.api;
-                }
-            };
-            
-            const previewGridDiv = document.querySelector('#previewGrid');
-            new agGrid.Grid(previewGridDiv, previewGridOptions);
+            updateCurlCommand(payload);
+            useJSONP(payload);
         }
 
-        // Show/Hide Sections
-        function showSection(section, event) {
-            event.preventDefault();
-            
-            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
-
-            const titles = {
-                'dashboard': 'Dashboard',
-                'data': 'ข้อมูลทั้งหมด',
-                'analytics': 'การวิเคราะห์',
-                'api': 'API Documentation',
-                'settings': 'ตั้งค่า'
-            };
-            document.getElementById('pageTitle').textContent = titles[section];
-
-            document.querySelectorAll('.content-section').forEach(el => {
-                el.style.display = 'none';
-            });
-            document.getElementById(section + 'Section').style.display = 'block';
-
-            if (section === 'analytics' && currentData.length > 0) {
-                generateAnalytics();
-            }
-        }
-
-        // Toggle Sidebar
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('mainContent').classList.toggle('active');
-        }
-
-        // Show/Hide Loading
-        function showLoading() {
-            document.getElementById('loadingSpinner').style.display = 'flex';
-        }
-
-        function hideLoading() {
-            document.getElementById('loadingSpinner').style.display = 'none';
-        }
-
-        // Show Toast
-        function showToast(type, message) {
-            const toastContainer = document.getElementById('toastContainer');
-            const toastId = 'toast_' + Date.now();
-            
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.id = toastId;
-            toast.innerHTML = `
-                <div class="toast-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <i class="fas ${type === 'success' ? 'fa-check-circle text-success' : 
-                                       type === 'error' ? 'fa-exclamation-circle text-danger' :
-                                       type === 'warning' ? 'fa-exclamation-triangle text-warning' :
-                                       'fa-info-circle text-info'} me-2"></i>
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-sm" onclick="closeToast('${toastId}')"></button>
-                </div>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            setTimeout(() => {
-                closeToast(toastId);
-            }, 5000);
-        }
-
-        function closeToast(id) {
-            const toast = document.getElementById(id);
-            if (toast) {
-                toast.remove();
-            }
-        }
-
-        // Main fetch function
-        function fetchData() {
-            showLoading();
-            
-            try {
-                const token = document.getElementById('token')?.value || 'test_token_123';
-                const sheetName = document.getElementById('sheetName')?.value || 'Sheet1';
-                const idFilter = document.getElementById('idFilter')?.value;
-                pageSize = parseInt(document.getElementById('pageSize')?.value || 10);
-                
-                const offset = (currentPage - 1) * pageSize;
-
-                // Build filters
-                const filters = {};
-                document.querySelectorAll('.dynamic-filter').forEach(input => {
-                    if (input.value.trim()) {
-                        filters[input.dataset.column] = input.value;
-                    }
-                });
-
-                const quickFilter = document.getElementById('quickFilter').value;
-                if (quickFilter) {
-                    filters._quick = quickFilter;
-                }
-
-                const payload = {
-                    token: token,
-                    sheetName: sheetName,
-                    options: {
-                        limit: pageSize,
-                        offset: offset,
-                        filters: filters
-                    }
-                };
-
-                if (idFilter) {
-                    payload.id = idFilter;
-                }
-
-                // Update cURL command
-                updateCurlCommand(payload);
-
-                // Use JSONP
-                useJSONP(payload);
-
-            } catch (error) {
-                hideLoading();
-                showToast('error', 'เกิดข้อผิดพลาด: ' + error.message);
-            }
-        }
-
-        // JSONP implementation
         function useJSONP(payload) {
             const callbackName = 'jsonp_callback_' + Date.now();
-            
             window[callbackName] = function(response) {
-                try {
-                    handleResponse(response);
-                } catch (error) {
-                    showToast('error', 'เกิดข้อผิดพลาดในการประมวลผลข้อมูล: ' + error.message);
-                } finally {
-                    delete window[callbackName];
-                    document.body.removeChild(script);
-                    hideLoading();
-                }
+                handleResponse(response);
+                delete window[callbackName];
+                document.body.removeChild(script);
             };
 
             const params = new URLSearchParams({
                 callback: callbackName,
-                sheetName: payload.sheetName || 'Sheet1'
+                sheetName: payload.sheetName
             });
-
-            if (payload.id) {
-                params.append('id', payload.id);
-            }
-
-            const url = API_URL + '?' + params.toString();
+            if (payload.id) params.append('id', payload.id);
 
             const script = document.createElement('script');
-            script.src = url;
+            script.src = `${API_URL}?${params.toString()}`;
             document.body.appendChild(script);
         }
 
-        // Handle API response
         function handleResponse(response) {
             if (response.success) {
-                currentData = response.data || [];
-                originalData = [...currentData];
-                totalRecords = response.total || currentData.length;
-                totalPages = Math.ceil(totalRecords / pageSize);
+                const data = response.data || [];
                 
-                updateAGGrid(currentData);
-                updatePagination(response);
-                displayRawJSON(response);
-                updateDashboardStats(response);
-                updateActiveFilters();
-                
-                if (currentData.length > 0) {
-                    updateFiltersFromData(currentData);
-                    generateColumnStats(currentData);
+                // สร้าง Column Definitions อัตโนมัติจาก Key ของข้อมูล
+                if (data.length > 0) {
+                    const keys = Object.keys(data[0]);
+                    const colDefs = keys.map(key => ({
+                        field: key,
+                        headerName: key.charAt(0).toUpperCase() + key.slice(1),
+                        filter: 'agTextColumnFilter'
+                    }));
+                    gridOptions.api.setColumnDefs(colDefs);
                 }
 
-                showToast('success', `ดึงข้อมูลสำเร็จ ${currentData.length} รายการ`);
+                gridOptions.api.setRowData(data);
+                document.getElementById('resultCount').textContent = `${data.length} รายการ`;
+                document.getElementById('rawJson').textContent = JSON.stringify(response, null, 2);
             } else {
-                showToast('error', response.message || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
+                alert('Error: ' + response.message);
             }
+            gridOptions.api.hideOverlay();
         }
 
-        // Update AG Grid with data
-        function updateAGGrid(data) {
-            if (!gridApi) return;
-
-            if (data.length === 0) {
-                gridApi.setColumnDefs([]);
-                gridApi.setRowData([]);
-                document.getElementById('totalCount').textContent = '0 total';
-                return;
-            }
-
-            // Generate column definitions from data
-            const firstRow = data[0];
-            const columns = Object.keys(firstRow).map(key => ({
-                field: key,
-                headerName: key,
-                sortable: true,
-                filter: 'agTextColumnFilter',
-                floatingFilter: true,
-                cellRenderer: function(params) {
-                    if (params.value instanceof Date) {
-                        return params.value.toLocaleString('th-TH');
-                    }
-                    return params.value;
-                }
-            }));
-
-            gridApi.setColumnDefs(columns);
-            gridApi.setRowData(data);
-            
-            document.getElementById('totalCount').textContent = `${data.length} of ${totalRecords} total`;
-
-            // Update preview grid
-            if (previewGridApi) {
-                previewGridApi.setColumnDefs(columns.slice(0, 5));
-                previewGridApi.setRowData(data.slice(0, 10));
-            }
+        function onQuickFilterChanged() {
+            gridOptions.api.setQuickFilter(document.getElementById('globalSearch').value);
         }
 
-        // Update filters from data
-        function updateFiltersFromData(data) {
-            if (data.length === 0) return;
-            
-            const headers = Object.keys(data[0]);
-            const filterContainer = document.getElementById('dynamicFilters');
-            
-            filterContainer.innerHTML = headers.map(header => `
-                <div class="col-md-4 col-lg-3">
-                    <label class="form-label">🔍 ${header}</label>
-                    <input type="text" class="form-control dynamic-filter" 
-                           data-column="${header}" placeholder="ค้นหา ${header}"
-                           onchange="applyColumnFilter('${header}', this.value)">
-                </div>
-            `).join('');
-        }
-
-        // Apply column filter
-        function applyColumnFilter(column, value) {
-            if (!gridApi) return;
-            
-            const filterInstance = gridApi.getFilterInstance(column);
-            if (filterInstance) {
-                filterInstance.setModel({
-                    filterType: 'text',
-                    type: 'contains',
-                    filter: value
-                });
-                gridApi.onFilterChanged();
-            }
-            updateActiveFilters();
-        }
-
-        // Update active filters count
-        function updateActiveFilters() {
-            if (!gridApi) return;
-            
-            const filterModel = gridApi.getFilterModel();
-            const filterCount = Object.keys(filterModel).length;
-            
-            document.getElementById('activeFiltersCount').textContent = `${filterCount} ตัวกรอง`;
-            
-            // Display active filters tags
-            const tagsContainer = document.getElementById('activeFiltersTags');
-            if (filterCount === 0) {
-                tagsContainer.innerHTML = '';
-                return;
-            }
-            
-            let tagsHtml = '<div class="d-flex gap-2 flex-wrap">';
-            Object.keys(filterModel).forEach(column => {
-                tagsHtml += `
-                    <span class="filter-tag">
-                        ${column}: ${filterModel[column].filter}
-                        <i class="fas fa-times" onclick="removeFilter('${column}')"></i>
-                    </span>
-                `;
-            });
-            tagsHtml += '</div>';
-            
-            tagsContainer.innerHTML = tagsHtml;
-        }
-
-        // Remove specific filter
-        function removeFilter(column) {
-            if (!gridApi) return;
-            
-            const filterInstance = gridApi.getFilterInstance(column);
-            if (filterInstance) {
-                filterInstance.setModel(null);
-                gridApi.onFilterChanged();
-                
-                // Clear input field
-                const input = document.querySelector(`[data-column="${column}"]`);
-                if (input) input.value = '';
-            }
-            updateActiveFilters();
-        }
-
-        // Update pagination
-        function updatePagination(response) {
-            const start = ((currentPage - 1) * pageSize) + 1;
-            const end = Math.min(currentPage * pageSize, totalRecords);
-            
-            document.getElementById('paginationInfo').textContent = 
-                `แสดง ${start} - ${end} จากทั้งหมด ${totalRecords} รายการ`;
-            
-            document.getElementById('currentPageDisplay').textContent = currentPage;
-            
-            // Update pagination buttons
-            document.getElementById('firstPageItem').classList.toggle('disabled', currentPage === 1);
-            document.getElementById('prevPageItem').classList.toggle('disabled', currentPage === 1);
-            document.getElementById('nextPageItem').classList.toggle('disabled', currentPage >= totalPages);
-            document.getElementById('lastPageItem').classList.toggle('disabled', currentPage >= totalPages);
-        }
-
-        // Go to page
-        function goToPage(direction) {
-            if (direction === 'first') {
-                currentPage = 1;
-            } else if (direction === 'prev') {
-                if (currentPage > 1) currentPage--;
-            } else if (direction === 'next') {
-                if (currentPage < totalPages) currentPage++;
-            } else if (direction === 'last') {
-                currentPage = totalPages;
-            }
-            
-            fetchData();
-        }
-
-        // Reset all filters
-        function resetFilters() {
-            document.getElementById('token').value = 'test_token_123';
-            document.getElementById('sheetName').value = 'Sheet1';
-            document.getElementById('idFilter').value = '';
-            document.getElementById('quickFilter').value = '';
-            currentPage = 1;
-            
-            // Clear all dynamic filter inputs
-            document.querySelectorAll('.dynamic-filter').forEach(input => {
-                input.value = '';
-            });
-            
-            if (gridApi) {
-                gridApi.setFilterModel(null);
-                gridApi.setQuickFilter(null);
-            }
-            
-            fetchData();
-        }
-
-        // Refresh data
-        function refreshData() {
-            fetchData();
-        }
-
-        // Export to CSV
         function exportToCSV() {
-            if (!gridApi || currentData.length === 0) {
-                showToast('warning', 'ไม่มีข้อมูลให้ Export');
-                return;
-            }
-
-            const params = {
-                skipHeader: false,
-                skipFooters: true,
-                skipGroups: true,
-                fileName: `sheet_data_${new Date().toISOString().slice(0,10)}.csv`
-            };
-            
-            gridApi.exportDataAsCsv(params);
-            showToast('success', 'Export CSV สำเร็จ');
+            gridOptions.api.exportDataAsCsv({
+                fileName: 'google-sheets-data.csv'
+            });
         }
 
-        // Export to Excel
-        function exportToExcel() {
-            if (currentData.length === 0) {
-                showToast('warning', 'ไม่มีข้อมูลให้ Export');
-                return;
-            }
-
-            const ws = XLSX.utils.json_to_sheet(currentData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-            XLSX.writeFile(wb, `sheet_data_${new Date().toISOString().slice(0,10)}.xlsx`);
-            
-            showToast('success', 'Export Excel สำเร็จ');
-        }
-
-        // Display Raw JSON
-        function displayRawJSON(response) {
-            document.getElementById('rawJson').textContent = 
-                JSON.stringify(response, null, 2);
-        }
-
-        // Update cURL command
         function updateCurlCommand(payload) {
-            const command = `curl -X POST "${API_URL}" \\
-  -H "Content-Type: application/json" \\
-  -d '${JSON.stringify(payload, null, 2)}'`;
-            
+            const command = `curl -X POST "${API_URL}" \\\n -H "Content-Type: application/json" \\\n -d '${JSON.stringify(payload, null, 2)}'`;
             document.getElementById('curlCommand').textContent = command;
         }
 
-        // Update Dashboard Stats
-        function updateDashboardStats(response) {
-            document.getElementById('totalRecords').textContent = response.total || 0;
-            
-            if (response.data && response.data.length > 0) {
-                document.getElementById('totalColumns').textContent = 
-                    Object.keys(response.data[0]).length;
-            }
-            
-            document.getElementById('lastUpdate').textContent = 
-                new Date().toLocaleString('th-TH');
-            
-            // Update chart if exists
-            updateChart(response.data);
-        }
-
-        // Update Chart
-        function updateChart(data) {
-            if (!data || data.length === 0) return;
-            
-            const ctx = document.getElementById('dataChart').getContext('2d');
-            
-            if (chart) {
-                chart.destroy();
-            }
-            
-            // Create sample chart based on first numeric column
-            const firstRow = data[0];
-            const numericColumns = Object.keys(firstRow).filter(key => 
-                !isNaN(parseFloat(firstRow[key])) && isFinite(firstRow[key])
-            );
-            
-            if (numericColumns.length > 0) {
-                const column = numericColumns[0];
-                const values = data.slice(0, 20).map(row => parseFloat(row[column]) || 0);
-                const labels = data.slice(0, 20).map((_, i) => `#${i+1}`);
-                
-                chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: column,
-                            data: values,
-                            backgroundColor: 'rgba(102, 126, 234, 0.5)',
-                            borderColor: 'rgba(102, 126, 234, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        // Generate Column Statistics
-        function generateColumnStats(data) {
-            if (!data || data.length === 0) return;
-            
-            const stats = {};
-            const columns = Object.keys(data[0]);
-            
-            columns.forEach(column => {
-                const values = data.map(row => row[column]).filter(v => v !== null && v !== undefined);
-                const numericValues = values.filter(v => !isNaN(parseFloat(v)) && isFinite(v)).map(parseFloat);
-                
-                stats[column] = {
-                    total: values.length,
-                    unique: new Set(values).size,
-                    type: numericValues.length > values.length / 2 ? 'number' : 'string',
-                    min: numericValues.length > 0 ? Math.min(...numericValues) : null,
-                    max: numericValues.length > 0 ? Math.max(...numericValues) : null,
-                    avg: numericValues.length > 0 ? 
-                        (numericValues.reduce((a, b) => a + b, 0) / numericValues.length).toFixed(2) : null
-                };
-            });
-
-            displayColumnStats(stats);
-        }
-
-        // Display Column Statistics
-        function displayColumnStats(stats) {
-            const statsContainer = document.getElementById('columnStats');
-            let html = '<table class="table table-sm">';
-            html += '<thead><tr><th>คอลัมน์</th><th>ชนิด</th><th>ค่าไม่ซ้ำ</th><th>ต่ำสุด</th><th>สูงสุด</th><th>เฉลี่ย</th></tr></thead>';
-            html += '<tbody>';
-            
-            Object.keys(stats).forEach(column => {
-                const s = stats[column];
-                html += `<tr>
-                    <td>${column}</td>
-                    <td>${s.type === 'number' ? '🔢 ตัวเลข' : '📝 ข้อความ'}</td>
-                    <td>${s.unique}</td>
-                    <td>${s.min !== null ? s.min : '-'}</td>
-                    <td>${s.max !== null ? s.max : '-'}</td>
-                    <td>${s.avg !== null ? s.avg : '-'}</td>
-                </tr>`;
-            });
-            
-            html += '</tbody></table>';
-            statsContainer.innerHTML = html;
-        }
-
-        // Generate Analytics
-        function generateAnalytics() {
-            if (!currentData || currentData.length === 0) return;
-            
-            // Distribution Chart
-            const distCtx = document.getElementById('distributionChart')?.getContext('2d');
-            if (distCtx) {
-                if (distributionChart) distributionChart.destroy();
-                
-                const columns = Object.keys(currentData[0]).slice(0, 5);
-                const data = columns.map(col => ({
-                    label: col,
-                    value: new Set(currentData.map(row => row[col])).size
-                }));
-                
-                distributionChart = new Chart(distCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: data.map(d => d.label),
-                        datasets: [{
-                            data: data.map(d => d.value),
-                            backgroundColor: [
-                                'rgba(102, 126, 234, 0.8)',
-                                'rgba(118, 75, 162, 0.8)',
-                                'rgba(255, 99, 132, 0.8)',
-                                'rgba(54, 162, 235, 0.8)',
-                                'rgba(255, 206, 86, 0.8)'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-            
-            // Column Analytics
-            const colAnalytics = document.getElementById('columnAnalytics');
-            let html = '';
-            
-            Object.keys(currentData[0]).forEach(column => {
-                const values = currentData.map(row => row[column]);
-                const valueCounts = {};
-                values.forEach(v => {
-                    const key = String(v || 'ว่าง');
-                    valueCounts[key] = (valueCounts[key] || 0) + 1;
-                });
-                
-                const topValues = Object.entries(valueCounts)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 5);
-                
-                html += `
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h6 class="fw-bold">${column}</h6>
-                            <p class="mb-2">ค่ารวม: ${values.length} | ค่าไม่ซ้ำ: ${Object.keys(valueCounts).length}</p>
-                            <div class="small">
-                                ${topValues.map(([val, count]) => `
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span>${val}</span>
-                                        <span class="badge bg-secondary">${count}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            colAnalytics.innerHTML = html;
-        }
-
-        // Selection changed handler
-        function onSelectionChanged() {
-            if (!gridApi) return;
-            
-            const selectedRows = gridApi.getSelectedRows();
-            document.getElementById('selectedCount').textContent = 
-                selectedRows.length > 0 ? `${selectedRows.length} selected` : '0 selected';
-        }
-
-        // Filter changed handler
-        function onFilterChanged() {
-            updateActiveFilters();
-        }
-
-        // Sort changed handler
-        function onSortChanged() {
-            // Can add custom sort handling here
-        }
-
-        // Save token
-        function saveToken() {
-            const newToken = document.getElementById('settingToken').value;
-            document.getElementById('token').value = newToken;
-            document.getElementById('tokenDisplay').textContent = newToken;
-            localStorage.setItem('api_token', newToken);
-            showToast('success', 'บันทึก Token สำเร็จ');
-        }
-
-        // Save settings
-        function saveSettings() {
-            const settings = {
-                token: document.getElementById('settingToken').value,
-                defaultSheet: document.getElementById('defaultSheet').value,
-                autoRefresh: document.getElementById('autoRefresh').value,
-                dateFormat: document.getElementById('dateFormat').value,
-                theme: document.getElementById('theme').value
-            };
-            
-            localStorage.setItem('app_settings', JSON.stringify(settings));
-            
-            // Apply theme
-            if (settings.theme === 'dark') {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-            
-            // Setup auto refresh
-            if (autoRefreshTimer) {
-                clearInterval(autoRefreshTimer);
-            }
-            
-            if (parseInt(settings.autoRefresh) > 0) {
-                autoRefreshTimer = setInterval(() => {
-                    fetchData();
-                }, parseInt(settings.autoRefresh) * 1000);
-            }
-            
-            showToast('success', 'บันทึกการตั้งค่า สำเร็จ');
-        }
-
-        // Load settings from localStorage
-        function loadSettings() {
-            const savedToken = localStorage.getItem('api_token');
-            if (savedToken) {
-                document.getElementById('token').value = savedToken;
-                document.getElementById('settingToken').value = savedToken;
-                document.getElementById('tokenDisplay').textContent = savedToken;
-            }
-            
-            const savedSettings = localStorage.getItem('app_settings');
-            if (savedSettings) {
-                const settings = JSON.parse(savedSettings);
-                document.getElementById('defaultSheet').value = settings.defaultSheet || 'Sheet1';
-                document.getElementById('autoRefresh').value = settings.autoRefresh || '0';
-                document.getElementById('dateFormat').value = settings.dateFormat || 'th';
-                document.getElementById('theme').value = settings.theme || 'light';
-                
-                if (settings.theme === 'dark') {
-                    document.body.classList.add('dark-mode');
-                }
-            }
-        }
+        // โหลดข้อมูลอัตโนมัติเมื่อเปิดหน้า
+        window.onload = fetchData;
     </script>
 </body>
 </html>
