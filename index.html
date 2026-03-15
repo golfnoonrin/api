@@ -3,48 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pichit API Search</title>
+    <title>Pichit API Search Console</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-50 p-6">
+<body class="bg-gray-100 p-4 md:p-10">
 
-    <div class="max-w-4xl mx-auto">
-        <div class="bg-white p-6 rounded-xl shadow-sm border mb-6">
-            <h2 class="text-xl font-bold mb-4 text-gray-800">ค้นหาข้อมูลผ่าน API</h2>
+    <div class="max-w-5xl mx-auto">
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 mb-8">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <span class="bg-blue-600 text-white p-2 rounded-lg mr-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                </span>
+                API Configurator
+            </h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Access Token</label>
-                    <input type="password" id="userToken" placeholder="กรอก Token ของคุณ..." 
-                           class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Web App URL (Deployment ID)</label>
+                    <input type="text" id="apiUrl" 
+                           placeholder="https://script.google.com/macros/s/.../exec" 
+                           class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm">
                 </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">คำที่ต้องการค้นหา</label>
-                    <input type="text" id="searchText" placeholder="พิมพ์ชื่อ, ID หรือข้อมูลอื่นๆ..." 
-                           class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Access Token</label>
+                        <input type="password" id="userToken" placeholder="กรอก Token ของคุณ..." 
+                               class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Search Query</label>
+                        <input type="text" id="searchText" placeholder="พิมพ์ข้อมูลที่ต้องการหา..." 
+                               class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm">
+                    </div>
                 </div>
             </div>
 
-            <div class="flex justify-end">
+            <div class="mt-8 flex items-center justify-between border-t pt-6">
+                <p class="text-xs text-gray-400">Status: <span id="apiStatus" class="text-gray-500 italic">Ready to connect</span></p>
                 <button onclick="fetchData()" id="btnSearch" 
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-2.5 rounded-lg font-semibold transition-all flex items-center shadow-md">
-                    <span>เริ่มค้นหา</span>
-                    <div id="loader" class="hidden ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-12 py-3 rounded-xl font-bold transition-all flex items-center shadow-lg active:scale-95">
+                    <span>Execute API</span>
+                    <div id="loader" class="hidden ml-3 w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 </button>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden border">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
             <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-100 border-b">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50">
                         <tr id="tableHeader">
-                            <th class="p-4 text-gray-500 font-medium italic">กรุณากรอก Token และกดปุ่มค้นหา</th>
+                            <th class="p-5 text-gray-400 font-normal italic">ข้อมูลจะปรากฏขึ้นที่นี่หลังจากรัน API</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-gray-100"></tbody>
@@ -54,38 +69,42 @@
     </div>
 
     <script>
-        // URL ของ Google Apps Script Web App
-        const API_URL = "https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec";
+        // โหลด URL ล่าสุดจากเครื่อง (ถ้ามี)
+        window.onload = () => {
+            const savedUrl = localStorage.getItem('last_api_url');
+            if (savedUrl) document.getElementById('apiUrl').value = savedUrl;
+        };
 
         async function fetchData() {
+            const apiUrl = document.getElementById('apiUrl').value.trim();
             const tokenInput = document.getElementById('userToken').value.trim();
             const searchText = document.getElementById('searchText').value;
             const btn = document.getElementById('btnSearch');
             const loader = document.getElementById('loader');
+            const statusText = document.getElementById('apiStatus');
 
-            // ตรวจสอบว่ากรอก Token หรือยัง
-            if (!tokenInput) {
-                alert("กรุณากรอก Token ก่อนใช้งาน");
-                document.getElementById('userToken').focus();
-                return;
-            }
+            // Validation เบื้องต้น
+            if (!apiUrl) return alert("กรุณาระบุ API URL");
+            if (!tokenInput) return alert("กรุณาระบุ Access Token");
 
-            // แสดงสถานะโหลด
+            // บันทึก URL ไว้ในเครื่องจะได้ไม่ต้องกรอกใหม่คราวหน้า
+            localStorage.setItem('last_api_url', apiUrl);
+
+            // เริ่มสถานะการทำงาน
             btn.disabled = true;
             loader.classList.remove('hidden');
+            statusText.innerText = "Connecting...";
+            statusText.className = "text-blue-500 animate-pulse";
 
             const requestData = {
-                token: tokenInput, // ใช้ค่าจากช่อง Input
+                token: tokenInput,
                 sheetName: "Sheet1",
                 searchText: searchText,
-                options: {
-                    limit: 20,
-                    offset: 0
-                }
+                options: { limit: 20, offset: 0 }
             };
 
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     body: JSON.stringify(requestData)
                 });
@@ -94,17 +113,18 @@
 
                 if (result.success) {
                     renderTable(result.data);
+                    statusText.innerText = "Connection Successful";
+                    statusText.className = "text-green-500 font-bold";
                 } else {
-                    // กรณี Token ผิดหรือสถานะไม่ Active ตามที่เขียนไว้ในหลังบ้าน
-                    alert("แจ้งเตือน: " + result.message);
-                    if (result.message.includes("Unauthorized")) {
-                        document.getElementById('tableBody').innerHTML = '';
-                        document.getElementById('tableHeader').innerHTML = '<th class="p-4 text-red-500 italic">Access Denied: Token ไม่ถูกต้อง</th>';
-                    }
+                    statusText.innerText = "Request Denied";
+                    statusText.className = "text-red-500 font-bold";
+                    alert(result.message);
                 }
             } catch (error) {
                 console.error("Error:", error);
-                alert("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+                statusText.innerText = "Connection Failed";
+                statusText.className = "text-red-600 font-bold underline";
+                alert("ไม่สามารถเชื่อมต่อได้: โปรดตรวจสอบว่า URL ถูกต้องและ Deploy เป็น Web App แล้ว");
             } finally {
                 btn.disabled = false;
                 loader.classList.add('hidden');
@@ -118,24 +138,24 @@
             body.innerHTML = '';
 
             if (data.length === 0) {
-                body.innerHTML = '<tr><td class="p-10 text-center text-gray-400">ไม่พบข้อมูลที่ตรงกับคำค้นหา</td></tr>';
+                body.innerHTML = '<tr><td class="p-10 text-center text-gray-400">Data found, but it is empty.</td></tr>';
                 return;
             }
 
             const keys = Object.keys(data[0]);
             keys.forEach(key => {
                 const th = document.createElement('th');
-                th.className = "p-4 text-sm font-semibold text-gray-600 uppercase";
+                th.className = "p-5 text-xs font-bold text-gray-500 uppercase tracking-wider";
                 th.innerText = key;
                 head.appendChild(th);
             });
 
             data.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 transition-colors";
+                tr.className = "hover:bg-blue-50 transition-colors";
                 keys.forEach(key => {
                     const td = document.createElement('td');
-                    td.className = "p-4 text-sm text-gray-600";
+                    td.className = "p-5 text-sm text-gray-600";
                     td.innerText = row[key] || "";
                     tr.appendChild(td);
                 });
