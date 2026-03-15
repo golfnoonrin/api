@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Sheets Data Viewer</title>
@@ -30,7 +30,7 @@
                         </label>
                         <input type="url" id="apiUrl" 
                                placeholder="https://script.google.com/macros/s/.../exec"
-                               value="https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec">
+                               value="https://script.google.com/macros/s/AKfycbxR_P_Lr_6d6Wg-joBhVRGQoRZVkhkSW7Bc3eX1vMep-LyuwchqTzj5aRzI0Bd8Xf8/exec">
                     </div>
                     
                     <div class="config-item">
@@ -80,23 +80,35 @@
                         <i class="fas fa-chevron-down" id="toggleIcon"></i>
                         ตัวกรองเพิ่มเติม
                     </h3>
-                    <div id="advancedFiltersContent" class="filters-content">
+                    <div id="advancedFiltersContent" class="filters-content" style="display: none;">
                         <div id="filtersContainer"></div>
-                        <button class="btn-add-filter" onclick="addFilterField()">
+                        <button type="button" class="btn-add-filter" onclick="addFilterField()">
                             <i class="fas fa-plus"></i> เพิ่มตัวกรอง
                         </button>
                     </div>
                 </div>
 
                 <div class="action-buttons">
-                    <button class="btn-primary" onclick="fetchData()">
+                    <button type="button" class="btn-primary" onclick="window.fetchData()">
                         <i class="fas fa-search"></i> ดึงข้อมูล
                     </button>
-                    <button class="btn-secondary" onclick="resetFilters()">
+                    <button type="button" class="btn-secondary" onclick="window.resetFilters()">
                         <i class="fas fa-undo"></i> ล้างตัวกรอง
                     </button>
-                    <button class="btn-info" onclick="testConnection()">
+                    <button type="button" class="btn-info" onclick="window.testConnection()">
                         <i class="fas fa-plug"></i> ทดสอบการเชื่อมต่อ
+                    </button>
+                    <button type="button" class="btn-info" onclick="window.exportToCSV()">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button type="button" class="btn-info" onclick="window.exportToJSON()">
+                        <i class="fas fa-file-code"></i> Export JSON
+                    </button>
+                    <button type="button" class="btn-info" onclick="window.copyData()">
+                        <i class="fas fa-copy"></i> Copy Data
+                    </button>
+                    <button type="button" class="btn-info" onclick="window.refreshData()">
+                        <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
             </section>
@@ -123,7 +135,7 @@
                     </div>
                 </div>
 
-                <div class="loading" id="loading">
+                <div class="loading" id="loading" style="display: none;">
                     <div class="spinner"></div>
                     <p>กำลังโหลดข้อมูล...</p>
                 </div>
@@ -167,7 +179,9 @@
             <!-- ประวัติการเรียก API -->
             <section class="history-section">
                 <h2><i class="fas fa-history"></i> ประวัติการเรียก API</h2>
-                <div class="history-list" id="historyList"></div>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state" style="padding: 20px;">ไม่มีประวัติ</div>
+                </div>
                 <button class="btn-clear-history" onclick="clearHistory()">
                     <i class="fas fa-trash"></i> ล้างประวัติ
                 </button>
@@ -177,13 +191,13 @@
         <footer class="footer">
             <p>
                 <i class="fas fa-code"></i> พัฒนาด้วย ❤️ เพื่อดึงข้อมูลจาก Google Sheets 
-                | <a href="#" onclick="showHowTo()">วิธีการใช้งาน</a>
+                | <a href="#" onclick="showHowTo(); return false;">วิธีการใช้งาน</a>
             </p>
         </footer>
     </div>
 
     <!-- Modal สำหรับแสดงวิธีการใช้งาน -->
-    <div class="modal" id="howToModal">
+    <div class="modal" id="howToModal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h3><i class="fas fa-question-circle"></i> วิธีการใช้งาน</h3>
@@ -219,6 +233,7 @@
         </div>
     </div>
 
+    <!-- โหลด JavaScript ที่นี่ เพื่อให้แน่ใจว่า DOM โหลดเสร็จก่อน -->
     <script src="script.js"></script>
 </body>
 </html>
