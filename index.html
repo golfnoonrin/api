@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Data Viewer</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <i class="fas fa-table header-icon"></i>
+                <h1>Google Sheets Data Viewer</h1>
+                <p>ดึงข้อมูลจาก Google Sheets ผ่าน API</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- การตั้งค่า API -->
+            <section class="config-section">
+                <h2><i class="fas fa-cog"></i> ตั้งค่า API</h2>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label for="apiUrl">
+                            <i class="fas fa-link"></i>
+                            Google Apps Script URL:
+                        </label>
+                        <input type="url" id="apiUrl" 
+                               placeholder="https://script.google.com/macros/s/.../exec"
+                               value="https://script.google.com/macros/s/AKfycbxR_P_Lr_6d6Wg-joBhVRGQoRZVkhkSW7Bc3eX1vMep-LyuwchqTzj5aRzI0Bd8Xf8/exec">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label for="apiToken">
+                            <i class="fas fa-key"></i>
+                            API Token:
+                        </label>
+                        <input type="password" id="apiToken" 
+                               placeholder="กรอก API Token" 
+                               value="test-token-123">
+                    </div>
+                </div>
+            </section>
+
+            <!-- ตัวกรองข้อมูล -->
+            <section class="filter-section">
+                <h2><i class="fas fa-filter"></i> ตัวกรองข้อมูล</h2>
+                <div class="filter-grid">
+                    <div class="filter-item">
+                        <label for="sheetName">เลือก Sheet:</label>
+                        <select id="sheetName">
+                            <option value="Sheet1">Sheet1</option>
+                            <option value="Sheet2">Sheet2</option>
+                            <option value="Sheet3">Sheet3</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="searchId">ค้นหาตาม ID:</label>
+                        <input type="text" id="searchId" placeholder="เช่น 001, 002...">
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="limit">จำนวนข้อมูล:</label>
+                        <input type="number" id="limit" min="1" value="10">
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="offset">เริ่มที่:</label>
+                        <input type="number" id="offset" min="0" value="0">
+                    </div>
+                </div>
+
+                <!-- ตัวกรองเพิ่มเติม -->
+                <div class="advanced-filters">
+                    <h3 onclick="toggleAdvancedFilters()">
+                        <i class="fas fa-chevron-down" id="toggleIcon"></i>
+                        ตัวกรองเพิ่มเติม
+                    </h3>
+                    <div id="advancedFiltersContent" class="filters-content">
+                        <div id="filtersContainer"></div>
+                        <button class="btn-add-filter" onclick="addFilterField()">
+                            <i class="fas fa-plus"></i> เพิ่มตัวกรอง
+                        </button>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="fetchData()">
+                        <i class="fas fa-search"></i> ดึงข้อมูล
+                    </button>
+                    <button class="btn-secondary" onclick="resetFilters()">
+                        <i class="fas fa-undo"></i> ล้างตัวกรอง
+                    </button>
+                    <button class="btn-info" onclick="testConnection()">
+                        <i class="fas fa-plug"></i> ทดสอบการเชื่อมต่อ
+                    </button>
+                </div>
+            </section>
+
+            <!-- สถานะการเชื่อมต่อ -->
+            <div class="connection-status" id="connectionStatus" style="display: none;"></div>
+
+            <!-- ผลลัพธ์ -->
+            <section class="result-section">
+                <h2><i class="fas fa-chart-bar"></i> ผลลัพธ์</h2>
+                
+                <div class="result-stats" id="resultStats" style="display: none;">
+                    <div class="stat-item">
+                        <i class="fas fa-database"></i>
+                        <span>จำนวนข้อมูล: <strong id="dataCount">0</strong> รายการ</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        <span>เวลาที่ใช้: <strong id="responseTime">0</strong> ms</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-hdd"></i>
+                        <span>ขนาดข้อมูล: <strong id="dataSize">0</strong> KB</span>
+                    </div>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>กำลังโหลดข้อมูล...</p>
+                </div>
+
+                <div class="error-message" id="errorMessage" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText"></span>
+                </div>
+
+                <div class="table-container" id="tableContainer">
+                    <table id="dataTable">
+                        <thead>
+                            <tr id="tableHeader">
+                                <th>#</th>
+                                <th>ไม่มีข้อมูล</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="2" class="empty-state">
+                                    <i class="fas fa-inbox fa-3x"></i>
+                                    <p>กรุณากดปุ่ม "ดึงข้อมูล" เพื่อแสดงผล</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination" style="display: none;">
+                    <button onclick="changePage('prev')" id="prevBtn" disabled>
+                        <i class="fas fa-chevron-left"></i> ก่อนหน้า
+                    </button>
+                    <span id="pageInfo">หน้า 1 / 1</span>
+                    <button onclick="changePage('next')" id="nextBtn" disabled>
+                        ถัดไป <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ประวัติการเรียก API -->
+            <section class="history-section">
+                <h2><i class="fas fa-history"></i> ประวัติการเรียก API</h2>
+                <div class="history-list" id="historyList"></div>
+                <button class="btn-clear-history" onclick="clearHistory()">
+                    <i class="fas fa-trash"></i> ล้างประวัติ
+                </button>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>
+                <i class="fas fa-code"></i> พัฒนาด้วย ❤️ เพื่อดึงข้อมูลจาก Google Sheets 
+                | <a href="#" onclick="showHowTo()">วิธีการใช้งาน</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Modal สำหรับแสดงวิธีการใช้งาน -->
+    <div class="modal" id="howToModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-question-circle"></i> วิธีการใช้งาน</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h4>ขั้นตอนการใช้งาน:</h4>
+                <ol>
+                    <li>ใส่ Google Apps Script URL ที่ Deploy แล้ว</li>
+                    <li>ใส่ API Token ที่ตั้งค่าไว้</li>
+                    <li>เลือก Sheet ที่ต้องการดึงข้อมูล</li>
+                    <li>กำหนดตัวกรองตามต้องการ</li>
+                    <li>คลิกปุ่ม "ดึงข้อมูล"</li>
+                </ol>
+                
+                <h4>รูปแบบข้อมูลที่ส่ง:</h4>
+                <pre>{
+    "token": "your-token",
+    "sheetName": "Sheet1",
+    "id": "001",
+    "options": {
+        "limit": 10,
+        "offset": 0,
+        "filters": {
+            "column": "value"
+        }
+    }
+}</pre>
+
+                <h4>หมายเหตุ:</h4>
+                <p>⚠️ Google Apps Script อาจมีปัญหา CORS ดังนั้นควรใช้ JSONP หรือทดสอบด้วย Postman</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
