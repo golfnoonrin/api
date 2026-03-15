@@ -1,750 +1,755 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets Data Viewer</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Google Sheets API Client</title>
     <style>
-        /* ถ้าต้องการใส่ CSS เพิ่มเติม */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .api-info {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .api-url {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #495057;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .token-badge {
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .filters-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .filters-section h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .filter-item label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .filter-item input, .filter-item select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+
+        .filter-item input:focus, .filter-item select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .pagination-info {
+            color: #495057;
+            font-size: 0.95em;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-page {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-page:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .btn-page:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .results-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-title {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .results-count {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+            padding: 15px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .json-view {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .tab-container {
+            margin-top: 30px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 5px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header class="header">
-            <div class="header-content">
-                <i class="fas fa-table header-icon"></i>
-                <h1>Google Sheets Data Viewer</h1>
-                <p>ดึงข้อมูลจาก Google Sheets ผ่าน API</p>
-            </div>
-        </header>
+        <div class="header">
+            <h1>📊 Google Sheets API Client</h1>
+            <p>ดึงข้อมูลจาก Google Sheets ผ่าน REST API</p>
+        </div>
 
-        <main class="main-content">
-            <!-- การตั้งค่า API -->
-            <section class="config-section">
-                <h2><i class="fas fa-cog"></i> ตั้งค่า API</h2>
-                <div class="config-grid">
-                    <div class="config-item">
-                        <label for="apiUrl">
-                            <i class="fas fa-link"></i>
-                            Google Apps Script URL:
-                        </label>
-                        <input type="url" id="apiUrl" 
-                               placeholder="https://script.google.com/macros/s/.../exec"
-                               value="https://script.google.com/macros/s/AKfycbxR_P_Lr_6d6Wg-joBhVRGQoRZVkhkSW7Bc3eX1vMep-LyuwchqTzj5aRzI0Bd8Xf8/exec">
-                    </div>
-                    
-                    <div class="config-item">
-                        <label for="apiToken">
-                            <i class="fas fa-key"></i>
-                            API Token:
-                        </label>
-                        <input type="password" id="apiToken" 
-                               placeholder="กรอก API Token" 
-                               value="test-token-123">
-                    </div>
-                </div>
-            </section>
+        <div class="api-info">
+            <div class="api-url" id="apiUrl">https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec</div>
+            <div class="token-badge" id="tokenDisplay">Token: test_token_123</div>
+        </div>
 
-            <!-- ตัวกรองข้อมูล -->
-            <section class="filter-section">
-                <h2><i class="fas fa-filter"></i> ตัวกรองข้อมูล</h2>
+        <div class="main-content">
+            <div class="filters-section">
+                <h3>
+                    <span>🔍 ตัวกรองข้อมูล</span>
+                </h3>
+                
                 <div class="filter-grid">
                     <div class="filter-item">
-                        <label for="sheetName">เลือก Sheet:</label>
-                        <select id="sheetName">
-                            <option value="Sheet1">Sheet1</option>
-                            <option value="Sheet2">Sheet2</option>
-                            <option value="Sheet3">Sheet3</option>
-                        </select>
+                        <label>🔑 Token</label>
+                        <input type="text" id="token" value="test_token_123" placeholder="Enter token">
                     </div>
-
+                    
                     <div class="filter-item">
-                        <label for="searchId">ค้นหาตาม ID:</label>
-                        <input type="text" id="searchId" placeholder="เช่น 001, 002...">
+                        <label>📄 Sheet Name</label>
+                        <input type="text" id="sheetName" value="Sheet1" placeholder="Sheet name">
                     </div>
-
+                    
                     <div class="filter-item">
-                        <label for="limit">จำนวนข้อมูล:</label>
-                        <input type="number" id="limit" min="1" value="10">
-                    </div>
-
-                    <div class="filter-item">
-                        <label for="offset">เริ่มที่:</label>
-                        <input type="number" id="offset" min="0" value="0">
+                        <label>🆔 ID Filter</label>
+                        <input type="text" id="idFilter" placeholder="Filter by ID">
                     </div>
                 </div>
 
-                <!-- ตัวกรองเพิ่มเติม -->
-                <div class="advanced-filters">
-                    <h3 onclick="toggleAdvancedFilters()">
-                        <i class="fas fa-chevron-down" id="toggleIcon"></i>
-                        ตัวกรองเพิ่มเติม
-                    </h3>
-                    <div id="advancedFiltersContent" class="filters-content" style="display: none;">
-                        <div id="filtersContainer"></div>
-                        <button type="button" class="btn-add-filter" onclick="addFilterField()">
-                            <i class="fas fa-plus"></i> เพิ่มตัวกรอง
-                        </button>
+                <div class="filter-grid">
+                    <div class="filter-item">
+                        <label>📌 Limit (ต่อหน้า)</label>
+                        <input type="number" id="limit" value="10" min="1" max="100">
+                    </div>
+                    
+                    <div class="filter-item">
+                        <label>📌 Offset (เริ่มที่)</label>
+                        <input type="number" id="offset" value="0" min="0">
+                    </div>
+                    
+                    <div class="filter-item">
+                        <label>🔎 ค้นหาทั่วไป</label>
+                        <input type="text" id="globalSearch" placeholder="ค้นหาทุกคอลัมน์">
                     </div>
                 </div>
 
-                <div class="action-buttons">
-                    <button type="button" class="btn-primary" onclick="fetchData()">
-                        <i class="fas fa-search"></i> ดึงข้อมูล
+                <div style="margin-top: 20px;">
+                    <h4 style="color: #495057; margin-bottom: 10px;">🎯 ตัวกรองเฉพาะคอลัมน์</h4>
+                    <div class="filter-grid" id="dynamicFilters">
+                        <!-- Filters will be added dynamically -->
+                    </div>
+                </div>
+
+                <div class="button-group" style="margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="fetchData()">
+                        <span>📥</span> ดึงข้อมูล
                     </button>
-                    <button type="button" class="btn-secondary" onclick="resetFilters()">
-                        <i class="fas fa-undo"></i> ล้างตัวกรอง
+                    <button class="btn btn-secondary" onclick="resetFilters()">
+                        <span>🔄</span> รีเซ็ต
                     </button>
-                    <button type="button" class="btn-info" onclick="testConnection()">
-                        <i class="fas fa-plug"></i> ทดสอบการเชื่อมต่อ
-                    </button>
-                    <button type="button" class="btn-info" onclick="exportToCSV()">
-                        <i class="fas fa-file-csv"></i> Export CSV
-                    </button>
-                    <button type="button" class="btn-info" onclick="exportToJSON()">
-                        <i class="fas fa-file-code"></i> Export JSON
-                    </button>
-                    <button type="button" class="btn-info" onclick="copyData()">
-                        <i class="fas fa-copy"></i> Copy Data
-                    </button>
-                    <button type="button" class="btn-info" onclick="refreshData()">
-                        <i class="fas fa-sync-alt"></i> Refresh
+                    <button class="btn btn-success" onclick="exportToCSV()">
+                        <span>📊</span> Export CSV
                     </button>
                 </div>
-            </section>
+            </div>
 
-            <!-- สถานะการเชื่อมต่อ -->
-            <div class="connection-status" id="connectionStatus" style="display: none;"></div>
+            <div class="pagination-controls">
+                <div class="pagination-info" id="paginationInfo">
+                    แสดง 0 - 0 จากทั้งหมด 0 รายการ
+                </div>
+                <div class="pagination-buttons">
+                    <button class="btn-page" onclick="changePage('prev')" id="prevPage">◀ ก่อนหน้า</button>
+                    <button class="btn-page" onclick="changePage('next')" id="nextPage">ถัดไป ▶</button>
+                </div>
+            </div>
 
-            <!-- ผลลัพธ์ -->
-            <section class="result-section">
-                <h2><i class="fas fa-chart-bar"></i> ผลลัพธ์</h2>
+            <div class="results-section">
+                <div class="results-header">
+                    <span class="results-title">📋 ผลลัพธ์</span>
+                    <span class="results-count" id="resultCount">0 รายการ</span>
+                </div>
                 
-                <div class="result-stats" id="resultStats" style="display: none;">
-                    <div class="stat-item">
-                        <i class="fas fa-database"></i>
-                        <span>จำนวนข้อมูล: <strong id="dataCount">0</strong> รายการ</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-clock"></i>
-                        <span>เวลาที่ใช้: <strong id="Time">0</strong> ms</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-hdd"></i>
-                        <span>ขนาดข้อมูล: <strong id="dataSize">0</strong> KB</span>
-                    </div>
-                </div>
-
-                <div class="loading" id="loading" style="display: none;">
-                    <div class="spinner"></div>
-                    <p>กำลังโหลดข้อมูล...</p>
-                </div>
-
-                <div class="error-message" id="errorMessage" style="display: none;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span id="errorText"></span>
-                </div>
-
                 <div class="table-container" id="tableContainer">
                     <table id="dataTable">
                         <thead>
                             <tr id="tableHeader">
-                                <th>#</th>
-                                <th>ไม่มีข้อมูล</th>
+                                <th>กำลังโหลดข้อมูล...</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
                             <tr>
-                                <td colspan="2" class="empty-state">
-                                    <i class="fas fa-inbox fa-3x"></i>
-                                    <p>กรุณากดปุ่ม "ดึงข้อมูล" เพื่อแสดงผล</p>
+                                <td colspan="100%" class="loading">
+                                    <div class="loading-spinner"></div>
+                                    กรุณากดปุ่ม "ดึงข้อมูล" เพื่อเริ่มต้น
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-
-                <!-- Pagination -->
-                <div class="pagination" id="pagination" style="display: none;">
-                    <button onclick="changePage('prev')" id="prevBtn" disabled>
-                        <i class="fas fa-chevron-left"></i> ก่อนหน้า
-                    </button>
-                    <span id="pageInfo">หน้า 1 / 1</span>
-                    <button onclick="changePage('next')" id="nextBtn" disabled>
-                        ถัดไป <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- ประวัติการเรียก API -->
-            <section class="history-section">
-                <h2><i class="fas fa-history"></i> ประวัติการเรียก API</h2>
-                <div class="history-list" id="historyList">
-                    <div class="empty-state" style="padding: 20px;">ไม่มีประวัติ</div>
-                </div>
-                <button class="btn-clear-history" onclick="clearHistory()">
-                    <i class="fas fa-trash"></i> ล้างประวัติ
-                </button>
-            </section>
-        </main>
-
-        <footer class="footer">
-            <p>
-                <i class="fas fa-code"></i> พัฒนาด้วย ❤️ เพื่อดึงข้อมูลจาก Google Sheets 
-                | <a href="#" onclick="showHowTo(); return false;">วิธีการใช้งาน</a>
-            </p>
-        </footer>
-    </div>
-
-    <!-- Modal สำหรับแสดงวิธีการใช้งาน -->
-    <div class="modal" id="howToModal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-question-circle"></i> วิธีการใช้งาน</h3>
-                <span class="close" onclick="closeModal()">&times;</span>
             </div>
-            <div class="modal-body">
-                <h4>ขั้นตอนการใช้งาน:</h4>
-                <ol>
-                    <li>ใส่ Google Apps Script URL ที่ Deploy แล้ว</li>
-                    <li>ใส่ API Token ที่ตั้งค่าไว้</li>
-                    <li>เลือก Sheet ที่ต้องการดึงข้อมูล</li>
-                    <li>กำหนดตัวกรองตามต้องการ</li>
-                    <li>คลิกปุ่ม "ดึงข้อมูล"</li>
-                </ol>
-                
-                <h4>รูปแบบข้อมูลที่ส่ง:</h4>
-                <pre>{
-    "token": "your-token",
-    "sheetName": "Sheet1",
-    "id": "001",
-    "options": {
-        "limit": 10,
-        "offset": 0,
-        "filters": {
-            "column": "value"
-        }
-    }
-}</pre>
 
-                <h4>หมายเหตุ:</h4>
-                <p>⚠️ Google Apps Script อาจมีปัญหา CORS ดังนั้นควรใช้ JSONP หรือทดสอบด้วย Postman</p>
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('raw')">📦 Raw JSON</button>
+                    <button class="tab-btn" onclick="switchTab('curl')">🔧 cURL Command</button>
+                </div>
+                
+                <div class="tab-content active" id="rawTab">
+                    <div class="json-view" id="rawJson">{}</div>
+                </div>
+                
+                <div class="tab-content" id="curlTab">
+                    <div class="json-view" id="curlCommand"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Inline JavaScript แทนการโหลดไฟล์แยก -->
     <script>
-        // ========== ตัวแปร Global ==========
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec';
+        
+        let currentData = null;
+        let currentFilters = {};
         let currentPage = 1;
-        let totalPages = 1;
-        let currentData = [];
-        let historyData = [];
-        let filterCount = 0;
+        let pageSize = 10;
+        let totalItems = 0;
 
-        // โหลดประวัติจาก localStorage
-        try {
-            const saved = localStorage.getItem('apiHistory');
-            if (saved) {
-                historyData = JSON.parse(saved);
-            }
-        } catch (e) {
-            console.log('No history found');
-        }
-
-        // ========== ฟังก์ชันหลัก ==========
-
+        // ฟังก์ชันหลักในการดึงข้อมูล
         async function fetchData() {
-            console.log('fetchData called');
-            
-            const apiUrl = document.getElementById('apiUrl').value;
-            const token = document.getElementById('apiToken').value;
-            const sheetName = document.getElementById('sheetName').value;
-            const searchId = document.getElementById('searchId').value;
-            const limit = parseInt(document.getElementById('limit').value) || 10;
-            const offset = parseInt(document.getElementById('offset').value) || 0;
-
-            // ตรวจสอบข้อมูลที่จำเป็น
-            if (!apiUrl) {
-                showError('กรุณาใส่ Google Apps Script URL');
-                return;
-            }
-
-            if (!token) {
-                showError('กรุณาใส่ API Token');
-                return;
-            }
-
-            if (!sheetName) {
-                showError('กรุณาเลือก Sheet');
-                return;
-            }
-
-            // แสดง loading
-            showLoading(true);
-            hideError();
-
-            // สร้าง payload
-            const payload = {
-                token: token,
-                sheetName: sheetName,
-                options: {
-                    limit: limit,
-                    offset: offset
-                }
-            };
-
-            // เพิ่ม ID ถ้ามี
-            if (searchId) {
-                payload.id = searchId;
-            }
-
-            // เพิ่ม filters ถ้ามี
-            const filters = getFilters();
-            if (Object.keys(filters).length > 0) {
-                payload.options.filters = filters;
-            }
-
-            // บันทึก start time
-            const startTime = Date.now();
-
             try {
-                // Replace your existing fetch block with this:
-                const response = await fetch(apiUrl, {
+                showLoading();
+                
+                const token = document.getElementById('token').value;
+                const sheetName = document.getElementById('sheetName').value;
+                const idFilter = document.getElementById('idFilter').value;
+                const limit = parseInt(document.getElementById('limit').value);
+                const offset = parseInt(document.getElementById('offset').value);
+                
+                // สร้าง filters object จาก dynamic filters
+                const filters = {};
+                document.querySelectorAll('.dynamic-filter').forEach(input => {
+                    if (input.value.trim()) {
+                        filters[input.dataset.column] = input.value;
+                    }
+                });
+
+                // เพิ่ม global search ถ้ามี
+                const globalSearch = document.getElementById('globalSearch').value;
+                if (globalSearch) {
+                    filters._global = globalSearch;
+                }
+
+                const payload = {
+                    token: token,
+                    sheetName: sheetName,
+                    options: {
+                        limit: limit,
+                        offset: offset,
+                        filters: filters
+                    }
+                };
+
+                if (idFilter) {
+                    payload.id = idFilter;
+                }
+
+                // แสดง cURL command
+                updateCurlCommand(payload);
+
+                const response = await fetch(API_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // <--- Try changing 'cors' to 'no-cors' if you only need to send data
+                    mode: 'no-cors', // เนื่องจาก Google Apps Script ต้องการ no-cors
                     headers: {
-                        'Content-Type': 'text/plain', // GAS sometimes prefers plain text to avoid pre-flight
+                        'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                handleSuccessResponse(result, startTime);
+                // เนื่องจากใช้ no-cors เราจะไม่สามารถอ่าน response ได้โดยตรง
+                // ต้องใช้ JSONP แทน
+                useJSONP(payload);
 
             } catch (error) {
-                console.log('Fetch failed, trying JSONP...', error);
-                
-                // ถ้า fetch ล้มเหลว ให้ลองใช้ JSONP
-                tryJsonp(payload, startTime);
+                hideLoading();
+                showError('เกิดข้อผิดพลาด: ' + error.message);
             }
         }
 
-        // ฟังก์ชันลองใช้ JSONP
-        function tryJsonp(payload, startTime) {
-            const apiUrl = document.getElementById('apiUrl').value;
-            const callbackName = 'jsonpCallback_' + Date.now();
-
-            // สร้างฟังก์ชัน callback
+        // ใช้ JSONP สำหรับ Google Apps Script
+        function useJSONP(payload) {
+            const callbackName = 'jsonp_callback_' + Date.now();
+            
+            // สร้าง callback function
             window[callbackName] = function(response) {
-                handleSuccessResponse(response, startTime);
-                delete window[callbackName];
-                if (script && script.parentNode) {
-                    script.parentNode.removeChild(script);
+                try {
+                    handleResponse(response);
+                } catch (error) {
+                    showError('เกิดข้อผิดพลาดในการประมวลผลข้อมูล: ' + error.message);
+                } finally {
+                    // ลบ callback และ script tag
+                    delete window[callbackName];
+                    document.body.removeChild(script);
                 }
             };
+
+            // สร้าง URL สำหรับ JSONP
+            const params = new URLSearchParams({
+                callback: callbackName,
+                sheetName: payload.sheetName || 'Sheet1'
+            });
+
+            // เพิ่ม filters ใน query string
+            if (payload.id) {
+                params.append('id', payload.id);
+            }
+
+            const url = API_URL + '?' + params.toString();
 
             // สร้าง script tag
             const script = document.createElement('script');
-            const dataStr = encodeURIComponent(JSON.stringify(payload));
-            script.src = apiUrl + '?callback=' + callbackName + '&data=' + dataStr;
-
-            script.onerror = function() {
-                showLoading(false);
-                showError('ไม่สามารถเชื่อมต่อกับ API ได้ (JSONP ล้มเหลว)');
-                delete window[callbackName];
-                if (script.parentNode) {
-                    script.parentNode.removeChild(script);
-                }
-                
-                // บันทึกประวัติ
-                addToHistory('JSONP Failed', 'error', Date.now() - startTime);
-            };
-
+            script.src = url;
             document.body.appendChild(script);
-
-            // ตั้งเวลา timeout
-            setTimeout(() => {
-                if (window[callbackName]) {
-                    showLoading(false);
-                    showError('การเรียกข้อมูลหมดเวลา');
-                    delete window[callbackName];
-                    if (script.parentNode) {
-                        script.parentNode.removeChild(script);
-                    }
-                }
-            }, 30000);
         }
 
-        // ฟังก์ชันจัดการ response สำเร็จ
-        function handleSuccessResponse(result, startTime) {
-            showLoading(false);
+        // จัดการ response ที่ได้
+        function handleResponse(response) {
+            hideLoading();
             
-            const endTime = Date.now();
-            const responseTime = endTime - startTime;
-
-            if (result && result.success) {
-                currentData = result.data || [];
+            if (response.success) {
+                currentData = response.data || [];
+                totalItems = response.total || currentData.length;
                 
-                // แสดงสถิติ
-                document.getElementById('resultStats').style.display = 'grid';
-                document.getElementById('dataCount').textContent = currentData.length;
-                document.getElementById('responseTime').textContent = responseTime;
-                
-                const dataSize = new TextEncoder().encode(JSON.stringify(currentData)).length / 1024;
-                document.getElementById('dataSize').textContent = dataSize.toFixed(2);
-
-                // แสดงข้อมูล
                 displayData(currentData);
+                updatePaginationInfo(response);
+                displayRawJSON(response);
                 
-                // จัดการ pagination
-                setupPagination(currentData.length);
-                
-                // บันทึกประวัติ
-                addToHistory('Success', 'success', responseTime, currentData.length);
-                
+                // อัพเดทตัวกรองตาม headers ที่ได้
+                if (currentData.length > 0) {
+                    updateFiltersFromData(currentData);
+                }
             } else {
-                showError(result?.message || 'เกิดข้อผิดพลาดจาก API');
-                addToHistory('Failed: ' + (result?.message || 'Unknown error'), 'error', responseTime);
+                showError(response.message || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
             }
         }
 
-        // ฟังก์ชันดึงค่าตัวกรอง
-        function getFilters() {
-            const filters = {};
-            const filterRows = document.querySelectorAll('.filter-row');
-            
-            filterRows.forEach(row => {
-                const key = row.querySelector('.filter-key')?.value;
-                const value = row.querySelector('.filter-value')?.value;
-                if (key && value) {
-                    filters[key] = value;
-                }
-            });
-            
-            return filters;
-        }
-
-        // ฟังก์ชันแสดงข้อมูลในตาราง
+        // แสดงข้อมูลในตาราง
         function displayData(data) {
             const tableHeader = document.getElementById('tableHeader');
             const tableBody = document.getElementById('tableBody');
             
             if (!data || data.length === 0) {
-                tableHeader.innerHTML = '<th>#</th><th>ข้อมูล</th>';
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="2" class="empty-state">
-                            <i class="fas fa-search fa-3x"></i>
-                            <p>ไม่พบข้อมูล</p>
-                        </td>
-                    </tr>
-                `;
+                tableHeader.innerHTML = '<th>ไม่มีข้อมูล</th>';
+                tableBody.innerHTML = '<tr><td colspan="100%" class="loading">ไม่พบข้อมูล</td></tr>';
+                document.getElementById('resultCount').textContent = '0 รายการ';
                 return;
             }
 
-            // สร้าง headers
+            // ดึง headers จากข้อมูลแรก
             const headers = Object.keys(data[0]);
-            tableHeader.innerHTML = '<th>#</th>';
-            headers.forEach(header => {
-                tableHeader.innerHTML += `<th>${escapeHtml(header)}</th>`;
-            });
-
-            // แสดงข้อมูล
-            tableBody.innerHTML = '';
-            data.forEach((item, index) => {
-                let row = '<tr>';
-                row += `<td>${index + 1 + (currentPage - 1) * 10}</td>`;
-                headers.forEach(header => {
-                    let value = item[header] || '-';
-                    if (value && value.length > 50) {
-                        value = value.substring(0, 50) + '...';
+            
+            // สร้าง header
+            tableHeader.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+            
+            // สร้าง rows
+            tableBody.innerHTML = data.map(row => {
+                return '<tr>' + headers.map(h => {
+                    let value = row[h] || '';
+                    // จัดรูปแบบวันที่ถ้าเป็น
+                    if (value instanceof Date) {
+                        value = value.toLocaleString('th-TH');
                     }
-                    row += `<td title="${escapeHtml(item[header] || '')}">${escapeHtml(value)}</td>`;
-                });
-                row += '</tr>';
-                tableBody.innerHTML += row;
-            });
+                    return `<td>${value}</td>`;
+                }).join('') + '</tr>';
+            }).join('');
+
+            document.getElementById('resultCount').textContent = data.length + ' รายการ';
         }
 
-        // ฟังก์ชันป้องกัน XSS
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // ฟังก์ชันจัดการ pagination
-        function setupPagination(totalItems) {
-            const itemsPerPage = parseInt(document.getElementById('limit').value) || 10;
-            totalPages = Math.ceil(totalItems / itemsPerPage);
-            currentPage = 1;
+        // อัพเดทตัวกรองตามข้อมูล
+        function updateFiltersFromData(data) {
+            const headers = Object.keys(data[0]);
+            const filterContainer = document.getElementById('dynamicFilters');
             
-            if (totalPages > 1) {
-                document.getElementById('pagination').style.display = 'flex';
-                document.getElementById('pageInfo').textContent = `หน้า ${currentPage} / ${totalPages}`;
-                
-                document.getElementById('prevBtn').disabled = true;
-                document.getElementById('nextBtn').disabled = currentPage === totalPages;
-            } else {
-                document.getElementById('pagination').style.display = 'none';
-            }
+            filterContainer.innerHTML = headers.map(header => `
+                <div class="filter-item">
+                    <label>🔍 ${header}</label>
+                    <input type="text" class="dynamic-filter" data-column="${header}" 
+                           placeholder="ค้นหา ${header}" onchange="applyFilter()">
+                </div>
+            `).join('');
         }
 
+        // อัพเดทข้อมูลการแบ่งหน้า
+        function updatePaginationInfo(response) {
+            const limit = parseInt(document.getElementById('limit').value);
+            const offset = parseInt(document.getElementById('offset').value);
+            
+            const start = offset + 1;
+            const end = Math.min(offset + limit, response.total);
+            
+            document.getElementById('paginationInfo').textContent = 
+                `แสดง ${start} - ${end} จากทั้งหมด ${response.total} รายการ`;
+            
+            document.getElementById('prevPage').disabled = offset === 0;
+            document.getElementById('nextPage').disabled = end >= response.total;
+        }
+
+        // เปลี่ยนหน้า
         function changePage(direction) {
-            if (direction === 'prev' && currentPage > 1) {
-                currentPage--;
-            } else if (direction === 'next' && currentPage < totalPages) {
-                currentPage++;
-            } else {
-                return;
-            }
-
-            const start = (currentPage - 1) * parseInt(document.getElementById('limit').value);
-            const end = start + parseInt(document.getElementById('limit').value);
-            const pageData = currentData.slice(start, end);
+            const currentOffset = parseInt(document.getElementById('offset').value);
+            const limit = parseInt(document.getElementById('limit').value);
             
-            displayData(pageData);
-            document.getElementById('pageInfo').textContent = `หน้า ${currentPage} / ${totalPages}`;
-            document.getElementById('prevBtn').disabled = currentPage === 1;
-            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+            if (direction === 'prev' && currentOffset > 0) {
+                document.getElementById('offset').value = Math.max(0, currentOffset - limit);
+            } else if (direction === 'next') {
+                document.getElementById('offset').value = currentOffset + limit;
+            }
+            
+            fetchData();
         }
 
-        async function testConnection() {
-            const apiUrl = document.getElementById('apiUrl').value;
-            const token = document.getElementById('apiToken').value;
-            const sheetName = document.getElementById('sheetName').value;
-
-            if (!apiUrl || !token || !sheetName) {
-                alert('กรุณากรอกข้อมูลให้ครบถ้วน');
-                return;
-            }
-
-            showLoading(true);
-            const startTime = Date.now();
-
-            const testPayload = {
-                token: token,
-                sheetName: sheetName,
-                options: {
-                    limit: 1
-                }
-            };
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(testPayload)
-                });
-
-                const result = await response.json();
-                const endTime = Date.now();
-                showLoading(false);
-
-                const statusDiv = document.getElementById('connectionStatus');
-                statusDiv.style.display = 'flex';
-                
-                if (result && result.success) {
-                    statusDiv.className = 'connection-status success';
-                    statusDiv.innerHTML = `
-                        <i class="fas fa-check-circle"></i>
-                        <div>
-                            <strong>เชื่อมต่อสำเร็จ!</strong><br>
-                            เวลาที่ใช้: ${endTime - startTime} ms
-                        </div>
-                    `;
-                } else {
-                    statusDiv.className = 'connection-status error';
-                    statusDiv.innerHTML = `
-                        <i class="fas fa-exclamation-circle"></i>
-                        <div>
-                            <strong>เชื่อมต่อล้มเหลว!</strong><br>
-                            ${result?.message || 'ไม่ทราบสาเหตุ'}
-                        </div>
-                    `;
-                }
-
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 5000);
-
-            } catch (error) {
-                showLoading(false);
-                const statusDiv = document.getElementById('connectionStatus');
-                statusDiv.style.display = 'flex';
-                statusDiv.className = 'connection-status error';
-                statusDiv.innerHTML = `
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div>
-                        <strong>เชื่อมต่อล้มเหลว!</strong><br>
-                        ${error.message}
-                    </div>
-                `;
-                
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 5000);
-            }
+        // แสดง Raw JSON
+        function displayRawJSON(data) {
+            document.getElementById('rawJson').textContent = 
+                JSON.stringify(data, null, 2);
         }
 
-        function addFilterField() {
-            filterCount++;
-            const container = document.getElementById('filtersContainer');
+        // อัพเดท cURL command
+        function updateCurlCommand(payload) {
+            const command = `curl -X POST "${API_URL}" \\
+  -H "Content-Type: application/json" \\
+  -d '${JSON.stringify(payload, null, 2)}'`;
             
-            const filterRow = document.createElement('div');
-            filterRow.className = 'filter-row';
-            filterRow.id = `filter-${filterCount}`;
-            
-            filterRow.innerHTML = `
-                <input type="text" class="filter-key" placeholder="ชื่อคอลัมน์ (เช่น name)">
-                <input type="text" class="filter-value" placeholder="ค่าที่ต้องการกรอง">
-                <button type="button" onclick="removeFilter(${filterCount})">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            container.appendChild(filterRow);
+            document.getElementById('curlCommand').textContent = command;
         }
 
-        function removeFilter(id) {
-            const filterRow = document.getElementById(`filter-${id}`);
-            if (filterRow) {
-                filterRow.remove();
-            }
-        }
-
-        function toggleAdvancedFilters() {
-            const content = document.getElementById('advancedFiltersContent');
-            const icon = document.getElementById('toggleIcon');
-            
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                icon.className = 'fas fa-chevron-up';
-            } else {
-                content.style.display = 'none';
-                icon.className = 'fas fa-chevron-down';
-            }
-        }
-
-        function resetFilters() {
-            document.getElementById('searchId').value = '';
-            document.getElementById('limit').value = '10';
-            document.getElementById('offset').value = '0';
-            document.getElementById('filtersContainer').innerHTML = '';
-            filterCount = 0;
-            addFilterField(); // เพิ่มตัวกรองเริ่มต้น 1 อัน
-            
-            document.getElementById('resultStats').style.display = 'none';
-            document.getElementById('pagination').style.display = 'none';
-            document.getElementById('tableHeader').innerHTML = '<th>#</th><th>ข้อมูล</th>';
-            document.getElementById('tableBody').innerHTML = `
+        // แสดง Loading
+        function showLoading() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = `
                 <tr>
-                    <td colspan="2" class="empty-state">
-                        <i class="fas fa-inbox fa-3x"></i>
-                        <p>กรุณากดปุ่ม "ดึงข้อมูล" เพื่อแสดงผล</p>
+                    <td colspan="100%" class="loading">
+                        <div class="loading-spinner"></div>
+                        กำลังโหลดข้อมูล...
                     </td>
                 </tr>
             `;
         }
 
-        // ฟังก์ชันแสดง loading
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        // ซ่อน Loading
+        function hideLoading() {
+            // Nothing to do here
         }
 
-        // ฟังก์ชันแสดง error
+        // แสดง Error
         function showError(message) {
-            document.getElementById('errorMessage').style.display = 'flex';
-            document.getElementById('errorText').textContent = message;
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="100%" class="error-message">
+                        ❌ ${message}
+                    </td>
+                </tr>
+            `;
         }
 
-        // ฟังก์ชันซ่อน error
-        function hideError() {
-            document.getElementById('errorMessage').style.display = 'none';
-        }
-
-        // ฟังก์ชันเพิ่มประวัติ
-        function addToHistory(message, status, responseTime, dataCount = 0) {
-            const history = {
-                time: new Date().toLocaleTimeString(),
-                date: new Date().toLocaleDateString(),
-                message: message,
-                status: status,
-                responseTime: responseTime,
-                dataCount: dataCount
-            };
+        // รีเซ็ตตัวกรอง
+        function resetFilters() {
+            document.getElementById('token').value = 'test_token_123';
+            document.getElementById('sheetName').value = 'Sheet1';
+            document.getElementById('idFilter').value = '';
+            document.getElementById('limit').value = '10';
+            document.getElementById('offset').value = '0';
+            document.getElementById('globalSearch').value = '';
             
-            historyData.unshift(history);
+            document.getElementById('dynamicFilters').innerHTML = '';
             
-            // เก็บเฉพาะ 20 รายการล่าสุด
-            if (historyData.length > 20) {
-                historyData.pop();
-            }
-            
-            try {
-                localStorage.setItem('apiHistory', JSON.stringify(historyData));
-            } catch (e) {
-                console.log('Failed to save history');
-            }
-            
-            displayHistory();
+            fetchData();
         }
 
-        // ฟังก์ชันแสดงประวัติ
-        function displayHistory() {
-            const historyList = document.getElementById('historyList');
-            
-            if (historyData.length === 0) {
-                historyList.innerHTML = '<div class="empty-state" style="padding: 20px;">ไม่มีประวัติ</div>';
-                return;
-            }
-            
-            historyList.innerHTML = '';
-            historyData.slice(0, 10).forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.innerHTML = `
-                    <div>
-                        <span class="time">${item.time}</span>
-                        <span style="margin-left: 10px;">${escapeHtml(item.message)}</span>
-                        ${item.dataCount ? `<small>(${item.dataCount} รายการ)</small>` : ''}
-                    </div>
-                    <span class="status ${item.status}">
-                        ${item.Time}ms
-                    </span>
-                `;
-                historyList.appendChild(historyItem);
-            });
+        // ใช้ตัวกรอง
+        function applyFilter() {
+            document.getElementById('offset').value = '0';
+            fetchData();
         }
 
-        function clearHistory() {
-            if (confirm('ต้องการล้างประวัติทั้งหมด?')) {
-                historyData = [];
-                localStorage.removeItem('apiHistory');
-                displayHistory();
-            }
-        }
-
-        function showHowTo() {
-            document.getElementById('howToModal').style.display = 'block';
-        }
-
-        function closeModal() {
-            document.getElementById('howToModal').style.display = 'none';
-        }
-
+        // Export to CSV
         function exportToCSV() {
             if (!currentData || currentData.length === 0) {
                 alert('ไม่มีข้อมูลให้ export');
@@ -754,7 +759,16 @@
             const headers = Object.keys(currentData[0]);
             const csvContent = [
                 headers.join(','),
-                ...currentData.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+                ...currentData.map(row => 
+                    headers.map(h => {
+                        let value = row[h] || '';
+                        // Escape commas and quotes
+                        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+                            value = '"' + value.replace(/"/g, '""') + '"';
+                        }
+                        return value;
+                    }).join(',')
+                )
             ].join('\n');
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -762,75 +776,35 @@
             const url = URL.createObjectURL(blob);
             
             link.setAttribute('href', url);
-            link.setAttribute('download', `google-sheets-data-${new Date().toISOString().slice(0,10)}.csv`);
+            link.setAttribute('download', 'sheet_data.csv');
             link.style.visibility = 'hidden';
             
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            URL.revokeObjectURL(url);
         }
 
-        function exportToJSON() {
-            if (!currentData || currentData.length === 0) {
-                alert('ไม่มีข้อมูลให้ export');
-                return;
-            }
-
-            const jsonContent = JSON.stringify(currentData, null, 2);
-            const blob = new Blob([jsonContent], { type: 'application/json' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
+        // สลับแท็บ
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            link.setAttribute('href', url);
-            link.setAttribute('download', `google-sheets-data-${new Date().toISOString().slice(0,10)}.json`);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }
-
-        function refreshData() {
-            if (currentData.length > 0) {
-                fetchData();
+            if (tab === 'raw') {
+                document.querySelector('.tab-btn:first-child').classList.add('active');
+                document.getElementById('rawTab').classList.add('active');
+            } else {
+                document.querySelector('.tab-btn:last-child').classList.add('active');
+                document.getElementById('curlTab').classList.add('active');
             }
         }
 
-        function copyData() {
-            if (!currentData || currentData.length === 0) {
-                alert('ไม่มีข้อมูลให้คัดลอก');
-                return;
-            }
-
-            const jsonString = JSON.stringify(currentData, null, 2);
-            navigator.clipboard.writeText(jsonString).then(() => {
-                alert('คัดลอกข้อมูลแล้ว');
-            }).catch(() => {
-                alert('ไม่สามารถคัดลอกข้อมูลได้');
-            });
-        }
-
-        // เริ่มต้นเมื่อโหลดหน้า
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing...');
+        // โหลดข้อมูลครั้งแรก
+        window.onload = function() {
+            // แสดง URL
+            document.getElementById('apiUrl').textContent = API_URL;
             
-            // เพิ่มตัวกรองเริ่มต้น
-            if (document.getElementById('filtersContainer').children.length === 0) {
-                addFilterField();
-            }
-            
-            // แสดงประวัติ
-            displayHistory();
-        });
-
-        // ปิด modal เมื่อคลิกนอก modal
-        window.onclick = function(event) {
-            const modal = document.getElementById('howToModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
+            // ทดสอบการเชื่อมต่อด้วย GET
+            fetchData();
         };
     </script>
 </body>
