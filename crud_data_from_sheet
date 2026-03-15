@@ -1,910 +1,224 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <base target="_top">
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets API - Apps Script</title>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        padding: 20px;
-      }
-
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        overflow: hidden;
-      }
-
-      .header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        text-align: center;
-      }
-
-      .header h1 {
-        font-size: 2.5em;
-        margin-bottom: 10px;
-      }
-
-      .header p {
-        font-size: 1.1em;
-        opacity: 0.9;
-      }
-
-      .content {
-        padding: 30px;
-      }
-
-      .setup-section {
-        background: #f0f4ff;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 30px;
-        border-left: 4px solid #667eea;
-      }
-
-      .setup-section h3 {
-        color: #333;
-        margin-bottom: 15px;
-      }
-
-      .api-url-box {
-        background: #1a1a1a;
-        color: #00ff00;
-        padding: 15px;
-        border-radius: 5px;
-        margin: 15px 0;
-        word-break: break-all;
-        font-family: monospace;
-        font-size: 14px;
-      }
-
-      .form-section {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 30px;
-      }
-
-      .form-section h2 {
-        color: #333;
-        margin-bottom: 20px;
-        font-size: 1.5em;
-      }
-
-      .form-group {
-        margin-bottom: 15px;
-      }
-
-      label {
-        display: block;
-        margin-bottom: 5px;
-        color: #555;
-        font-weight: 500;
-      }
-
-      input, select, textarea {
-        width: 100%;
-        padding: 10px;
-        border: 2px solid #ddd;
-        border-radius: 5px;
-        font-size: 16px;
-        transition: border-color 0.3s;
-      }
-
-      input:focus, select:focus, textarea:focus {
-        outline: none;
-        border-color: #667eea;
-      }
-
-      .button-group {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 20px;
-      }
-
-      .btn {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: all 0.3s;
-        font-weight: 500;
-      }
-
-      .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-      }
-
-      .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-      }
-
-      .btn-success {
-        background: #28a745;
-        color: white;
-      }
-
-      .btn-success:hover {
-        background: #218838;
-      }
-
-      .btn-secondary {
-        background: #6c757d;
-        color: white;
-      }
-
-      .btn-secondary:hover {
-        background: #5a6268;
-      }
-
-      .btn-info {
-        background: #17a2b8;
-        color: white;
-      }
-
-      .btn-info:hover {
-        background: #138496;
-      }
-
-      .result-section {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 20px;
-      }
-
-      .result-section h2 {
-        color: #333;
-        margin-bottom: 20px;
-      }
-
-      .response-info {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 10px;
-      }
-
-      .info-item {
-        padding: 10px;
-        background: white;
-        border-radius: 5px;
-        border-left: 3px solid #667eea;
-      }
-
-      .info-item strong {
-        color: #667eea;
-        display: block;
-        margin-bottom: 5px;
-      }
-
-      .table-container {
-        overflow-x: auto;
-        max-height: 400px;
-        overflow-y: auto;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      th, td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-      }
-
-      th {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        font-weight: 500;
-        position: sticky;
-        top: 0;
-      }
-
-      tr:hover {
-        background-color: #f5f5f5;
-      }
-
-      .error-message {
-        background: #f8d7da;
-        color: #721c24;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        border-left: 4px solid #dc3545;
-      }
-
-      .loading {
-        display: none;
-        text-align: center;
-        padding: 40px;
-      }
-
-      .spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #667eea;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 20px;
-      }
-
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-
-      .footer {
-        text-align: center;
-        padding: 20px;
-        background: #f8f9fa;
-        border-top: 1px solid #ddd;
-        color: #666;
-      }
-
-      .note {
-        background: #fff3cd;
-        color: #856404;
-        padding: 10px;
-        border-radius: 5px;
-        margin: 10px 0;
-        border-left: 4px solid #ffc107;
-        font-size: 14px;
-      }
-
-      .filter-item {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-        align-items: center;
-      }
-
-      .filter-item input {
-        flex: 1;
-      }
-
-      .filter-item button {
-        padding: 10px 15px;
-        background: #dc3545;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        white-space: nowrap;
-      }
-
-      .filter-item button:hover {
-        background: #c82333;
-      }
-
-      .add-filter {
-        margin-top: 10px;
-        padding: 10px 15px;
-        background: #28a745;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-      }
-
-      .add-filter:hover {
-        background: #218838;
-      }
-
-      .stats {
-        display: flex;
-        gap: 20px;
-        margin-top: 10px;
-        padding: 10px;
-        background: #e9ecef;
-        border-radius: 5px;
-      }
-
-      .stats span {
-        font-weight: bold;
-        color: #667eea;
-      }
-
-      @media (max-width: 768px) {
-        .button-group {
-          flex-direction: column;
-        }
-        
-        .btn {
-          width: 100%;
-        }
-        
-        .filter-item {
-          flex-wrap: wrap;
-        }
-        
-        .filter-item button {
-          width: 100%;
-        }
-      }
-    </style>
-  </head>
-  <body>
+    <title>Google Sheets Data Viewer</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
     <div class="container">
-      <div class="header">
-        <h1>📊 Google Sheets API</h1>
-        <p>ด้วย Google Apps Script (doPost) - รองรับ JSONP</p>
-      </div>
+        <header class="header">
+            <div class="header-content">
+                <i class="fas fa-table header-icon"></i>
+                <h1>Google Sheets Data Viewer</h1>
+                <p>ดึงข้อมูลจาก Google Sheets ผ่าน API</p>
+            </div>
+        </header>
 
-      <div class="content">
-        <div class="setup-section">
-          <h3>🔧 การตั้งค่าเบื้องต้น</h3>
-          <ol style="margin-left: 20px; margin-bottom: 15px;">
-            <li>รัน <code>setSpreadsheetId('your-spreadsheet-id')</code> ใน Apps Script Editor</li>
-            <li>รัน <code>setApiToken('your-token')</code> เพื่อตั้งค่า Token</li>
-            <li>คลิก Deploy > New deployment > Web App</li>
-            <li>ตั้งค่า Execute as: "Me", Access: "Anyone"</li>
-            <li>คัดลอก URL ที่ได้มาวางด้านล่าง</li>
-          </ol>
-          
-          <div class="api-url-box" id="apiUrl">
-            คลิกปุ่ม "Get URL" เพื่อดู API URL
-          </div>
-          
-          <div class="button-group">
-            <button class="btn btn-info" onclick="getApiUrl()">
-              🔗 Get API URL
-            </button>
-            <button class="btn btn-secondary" onclick="testApi()">
-              🧪 Test API Connection
-            </button>
-          </div>
-        </div>
+        <main class="main-content">
+            <!-- การตั้งค่า API -->
+            <section class="config-section">
+                <h2><i class="fas fa-cog"></i> ตั้งค่า API</h2>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label for="apiUrl">
+                            <i class="fas fa-link"></i>
+                            Google Apps Script URL:
+                        </label>
+                        <input type="url" id="apiUrl" 
+                               placeholder="https://script.google.com/macros/s/.../exec"
+                               value="https://script.google.com/macros/s/AKfycbxR_P_Lr_6d6Wg-joBhVRGQoRZVkhkSW7Bc3eX1vMep-LyuwchqTzj5aRzI0Bd8Xf8/exec">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label for="apiToken">
+                            <i class="fas fa-key"></i>
+                            API Token:
+                        </label>
+                        <input type="password" id="apiToken" 
+                               placeholder="กรอก API Token" 
+                               value="test-token-123">
+                    </div>
+                </div>
+            </section>
 
-        <div class="note">
-          <strong>💡 หมายเหตุ:</strong> Google Apps Script ไม่รองรับ CORS เต็มรูปแบบ 
-          ดังนั้นเราจะใช้วิธี JSONP ในการเรียกข้อมูล
-        </div>
+            <!-- ตัวกรองข้อมูล -->
+            <section class="filter-section">
+                <h2><i class="fas fa-filter"></i> ตัวกรองข้อมูล</h2>
+                <div class="filter-grid">
+                    <div class="filter-item">
+                        <label for="sheetName">เลือก Sheet:</label>
+                        <select id="sheetName">
+                            <option value="Sheet1">Sheet1</option>
+                            <option value="Sheet2">Sheet2</option>
+                            <option value="Sheet3">Sheet3</option>
+                        </select>
+                    </div>
 
-        <div class="form-section">
-          <h2>⚙️ ทดสอบเรียก API</h2>
+                    <div class="filter-item">
+                        <label for="searchId">ค้นหาตาม ID:</label>
+                        <input type="text" id="searchId" placeholder="เช่น 001, 002...">
+                    </div>
 
-          <div class="form-group">
-            <label for="apiUrlInput">API URL:</label>
-            <input type="url" id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
-          </div>
+                    <div class="filter-item">
+                        <label for="limit">จำนวนข้อมูล:</label>
+                        <input type="number" id="limit" min="1" value="10">
+                    </div>
 
-          <div class="form-group">
-            <label for="token">Token *</label>
-            <input type="password" id="token" value="test-token-123" placeholder="กรอก API Token">
-          </div>
+                    <div class="filter-item">
+                        <label for="offset">เริ่มที่:</label>
+                        <input type="number" id="offset" min="0" value="0">
+                    </div>
+                </div>
 
-          <div class="form-group">
-            <label for="sheetName">Sheet Name *</label>
-            <select id="sheetName">
-              <option value="">เลือก Sheet</option>
-              <option value="Sheet1" selected>Sheet1</option>
-              <option value="Sheet2">Sheet2</option>
-              <option value="Sheet3">Sheet3</option>
-            </select>
-          </div>
+                <!-- ตัวกรองเพิ่มเติม -->
+                <div class="advanced-filters">
+                    <h3 onclick="toggleAdvancedFilters()">
+                        <i class="fas fa-chevron-down" id="toggleIcon"></i>
+                        ตัวกรองเพิ่มเติม
+                    </h3>
+                    <div id="advancedFiltersContent" class="filters-content">
+                        <div id="filtersContainer"></div>
+                        <button class="btn-add-filter" onclick="addFilterField()">
+                            <i class="fas fa-plus"></i> เพิ่มตัวกรอง
+                        </button>
+                    </div>
+                </div>
 
-          <div class="form-group">
-            <label for="id">ID (ค้นหาตาม ID)</label>
-            <input type="text" id="id" placeholder="กรองตาม ID (ไม่บังคับ)">
-          </div>
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="fetchData()">
+                        <i class="fas fa-search"></i> ดึงข้อมูล
+                    </button>
+                    <button class="btn-secondary" onclick="resetFilters()">
+                        <i class="fas fa-undo"></i> ล้างตัวกรอง
+                    </button>
+                    <button class="btn-info" onclick="testConnection()">
+                        <i class="fas fa-plug"></i> ทดสอบการเชื่อมต่อ
+                    </button>
+                </div>
+            </section>
 
-          <div class="form-group">
-            <label>⚙️ ตัวเลือกเพิ่มเติม</label>
-            <div style="margin-left: 20px; margin-top: 10px;">
-              <div class="form-group">
-                <label for="limit">Limit (จำนวนข้อมูล):</label>
-                <input type="number" id="limit" min="1" placeholder="ไม่ระบุ = ดึงทั้งหมด">
-              </div>
-              
-              <div class="form-group">
-                <label for="offset">Offset (เริ่มจาก):</label>
-                <input type="number" id="offset" min="0" value="0">
-              </div>
+            <!-- สถานะการเชื่อมต่อ -->
+            <div class="connection-status" id="connectionStatus" style="display: none;"></div>
 
-              <div class="form-group">
-                <label>🔍 ตัวกรองเพิ่มเติม:</label>
-                <div id="filtersContainer"></div>
-                <button type="button" class="add-filter" onclick="addFilter()">
-                  ➕ เพิ่มตัวกรอง
+            <!-- ผลลัพธ์ -->
+            <section class="result-section">
+                <h2><i class="fas fa-chart-bar"></i> ผลลัพธ์</h2>
+                
+                <div class="result-stats" id="resultStats" style="display: none;">
+                    <div class="stat-item">
+                        <i class="fas fa-database"></i>
+                        <span>จำนวนข้อมูล: <strong id="dataCount">0</strong> รายการ</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        <span>เวลาที่ใช้: <strong id="responseTime">0</strong> ms</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-hdd"></i>
+                        <span>ขนาดข้อมูล: <strong id="dataSize">0</strong> KB</span>
+                    </div>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>กำลังโหลดข้อมูล...</p>
+                </div>
+
+                <div class="error-message" id="errorMessage" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText"></span>
+                </div>
+
+                <div class="table-container" id="tableContainer">
+                    <table id="dataTable">
+                        <thead>
+                            <tr id="tableHeader">
+                                <th>#</th>
+                                <th>ไม่มีข้อมูล</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="2" class="empty-state">
+                                    <i class="fas fa-inbox fa-3x"></i>
+                                    <p>กรุณากดปุ่ม "ดึงข้อมูล" เพื่อแสดงผล</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination" style="display: none;">
+                    <button onclick="changePage('prev')" id="prevBtn" disabled>
+                        <i class="fas fa-chevron-left"></i> ก่อนหน้า
+                    </button>
+                    <span id="pageInfo">หน้า 1 / 1</span>
+                    <button onclick="changePage('next')" id="nextBtn" disabled>
+                        ถัดไป <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ประวัติการเรียก API -->
+            <section class="history-section">
+                <h2><i class="fas fa-history"></i> ประวัติการเรียก API</h2>
+                <div class="history-list" id="historyList"></div>
+                <button class="btn-clear-history" onclick="clearHistory()">
+                    <i class="fas fa-trash"></i> ล้างประวัติ
                 </button>
-              </div>
-            </div>
-          </div>
+            </section>
+        </main>
 
-          <div class="button-group">
-            <button class="btn btn-primary" onclick="fetchData()">
-              🔍 ดึงข้อมูล
-            </button>
-            <button class="btn btn-success" onclick="fetchData(true)">
-              📊 ดึงข้อมูล (JSONP)
-            </button>
-            <button class="btn btn-secondary" onclick="clearForm()">
-              🗑️ ล้างฟอร์ม
-            </button>
-            <button class="btn btn-info" onclick="showSampleCode()">
-              📋 ตัวอย่างโค้ด
-            </button>
-          </div>
-        </div>
-
-        <div id="loading" class="loading">
-          <div class="spinner"></div>
-          <p>กำลังโหลดข้อมูล...</p>
-          <p style="font-size: 14px; color: #666;" id="loadingStatus"></p>
-        </div>
-
-        <div id="error" class="error-message" style="display: none;"></div>
-
-        <div class="result-section">
-          <h2>📋 ผลลัพธ์</h2>
-          
-          <div class="response-info">
-            <div class="info-item">
-              <strong>Status Code:</strong>
-              <span id="status">-</span>
-            </div>
-            <div class="info-item">
-              <strong>Message:</strong>
-              <span id="message">-</span>
-            </div>
-            <div class="info-item">
-              <strong>จำนวนข้อมูล:</strong>
-              <span id="count">0</span>
-            </div>
-          </div>
-
-          <div class="table-container">
-            <table id="resultTable">
-              <thead>
-                <tr id="tableHeader">
-                  <th>#</th>
-                  <th>ข้อมูล</th>
-                </tr>
-              </thead>
-              <tbody id="tableBody">
-                <tr>
-                  <td colspan="2" style="text-align: center; padding: 40px; color: #666;">
-                    <span style="font-size: 48px;">📭</span><br>
-                    ยังไม่มีข้อมูล กรุณาดึงข้อมูลก่อน
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="stats" id="stats" style="display: none;">
-            <div>⏱️ เวลาที่ใช้: <span id="responseTime">0</span> ms</div>
-            <div>📦 ขนาดข้อมูล: <span id="dataSize">0</span> KB</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="footer">
-        <p>Google Apps Script API Demo | doPost() with JSONP Support | v2.0</p>
-      </div>
+        <footer class="footer">
+            <p>
+                <i class="fas fa-code"></i> พัฒนาด้วย ❤️ เพื่อดึงข้อมูลจาก Google Sheets 
+                | <a href="#" onclick="showHowTo()">วิธีการใช้งาน</a>
+            </p>
+        </footer>
     </div>
 
-    <!-- Modal สำหรับแสดงตัวอย่างโค้ด -->
-    <div id="codeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-      <div style="background: white; max-width: 600px; margin: 50px auto; padding: 20px; border-radius: 10px;">
-        <h3 style="margin-bottom: 20px;">📋 ตัวอย่างการเรียก API</h3>
-        
-        <h4>JavaScript (JSONP):</h4>
-        <pre style="background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto;">
-function callAPI() {
-  const data = {
-    token: "your-token",
-    sheetName: "Sheet1",
-    options: { limit: 10 }
-  };
-  
-  const script = document.createElement('script');
-  script.src = apiUrl + '?callback=handleResponse&data=' + 
-               encodeURIComponent(JSON.stringify(data));
-  document.body.appendChild(script);
-}
-
-function handleResponse(response) {
-  console.log(response);
-}</pre>
-
-        <h4>Python:</h4>
-        <pre style="background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto;">
-import requests
-import json
-
-url = "https://script.google.com/macros/s/your-id/exec"
-data = {
+    <!-- Modal สำหรับแสดงวิธีการใช้งาน -->
+    <div class="modal" id="howToModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-question-circle"></i> วิธีการใช้งาน</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h4>ขั้นตอนการใช้งาน:</h4>
+                <ol>
+                    <li>ใส่ Google Apps Script URL ที่ Deploy แล้ว</li>
+                    <li>ใส่ API Token ที่ตั้งค่าไว้</li>
+                    <li>เลือก Sheet ที่ต้องการดึงข้อมูล</li>
+                    <li>กำหนดตัวกรองตามต้องการ</li>
+                    <li>คลิกปุ่ม "ดึงข้อมูล"</li>
+                </ol>
+                
+                <h4>รูปแบบข้อมูลที่ส่ง:</h4>
+                <pre>{
     "token": "your-token",
     "sheetName": "Sheet1",
-    "options": {"limit": 10}
-}
+    "id": "001",
+    "options": {
+        "limit": 10,
+        "offset": 0,
+        "filters": {
+            "column": "value"
+        }
+    }
+}</pre>
 
-response = requests.post(url, json=data)
-print(response.json())</pre>
-
-        <button class="btn btn-secondary" onclick="closeModal()" style="margin-top: 20px;">ปิด</button>
-      </div>
+                <h4>หมายเหตุ:</h4>
+                <p>⚠️ Google Apps Script อาจมีปัญหา CORS ดังนั้นควรใช้ JSONP หรือทดสอบด้วย Postman</p>
+            </div>
+        </div>
     </div>
 
-    <script>
-      let filterCount = 0;
-      let startTime = 0;
-
-      // เพิ่ม filter
-      function addFilter() {
-        const container = document.getElementById('filtersContainer');
-        filterCount++;
-        
-        const filterDiv = document.createElement('div');
-        filterDiv.className = 'filter-item';
-        filterDiv.id = `filter-${filterCount}`;
-        
-        filterDiv.innerHTML = `
-          <input type="text" class="filter-key" placeholder="ชื่อคอลัมน์ (เช่น name)">
-          <input type="text" class="filter-value" placeholder="ค่าที่ต้องการกรอง">
-          <button type="button" onclick="removeFilter(${filterCount})">ลบ</button>
-        `;
-        
-        container.appendChild(filterDiv);
-      }
-
-      // ลบ filter
-      function removeFilter(id) {
-        const filterDiv = document.getElementById(`filter-${id}`);
-        if (filterDiv) {
-          filterDiv.remove();
-        }
-      }
-
-      // ดึง API URL
-      function getApiUrl() {
-        if (google && google.script && google.script.run) {
-          document.getElementById('loadingStatus').textContent = 'กำลังดึง URL...';
-          document.getElementById('loading').style.display = 'block';
-          
-          google.script.run.withSuccessHandler(function(url) {
-            document.getElementById('apiUrl').textContent = url;
-            document.getElementById('apiUrlInput').value = url;
-            document.getElementById('loading').style.display = 'none';
-          }).withFailureHandler(function(error) {
-            document.getElementById('loading').style.display = 'none';
-            alert('Error: ' + error);
-          }).getDeployedUrl();
-        } else {
-          const demoUrl = prompt('กรุณาใส่ API URL (จาก Google Apps Script):');
-          if (demoUrl) {
-            document.getElementById('apiUrl').textContent = demoUrl;
-            document.getElementById('apiUrlInput').value = demoUrl;
-          }
-        }
-      }
-
-      // ทดสอบ API
-      function testApi() {
-        const apiUrl = document.getElementById('apiUrlInput').value;
-        if (!apiUrl) {
-          alert('กรุณากรอก API URL');
-          return;
-        }
-
-        startTime = Date.now();
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('loadingStatus').textContent = 'กำลังทดสอบการเชื่อมต่อ...';
-
-        const callbackName = 'testCallback_' + Date.now();
-        
-        window[callbackName] = function(response) {
-          const endTime = Date.now();
-          document.getElementById('loading').style.display = 'none';
-          
-          if (response && response.success) {
-            alert('✅ API เชื่อมต่อสำเร็จ!\n' + 
-                  'Message: ' + response.message + '\n' +
-                  'Response time: ' + (endTime - startTime) + 'ms');
-          } else {
-            alert('⚠️ API ตอบกลับ:\n' + JSON.stringify(response, null, 2));
-          }
-          
-          delete window[callbackName];
-          if (script.parentNode) script.parentNode.removeChild(script);
-        };
-
-        const script = document.createElement('script');
-        script.src = apiUrl + '?callback=' + callbackName;
-        script.onerror = function() {
-          document.getElementById('loading').style.display = 'none';
-          alert('❌ ไม่สามารถเชื่อมต่อ API ได้');
-          delete window[callbackName];
-        };
-        
-        document.body.appendChild(script);
-
-        setTimeout(() => {
-          if (window[callbackName]) {
-            document.getElementById('loading').style.display = 'none';
-            alert('⏰ การเชื่อมต่อหมดเวลา');
-            delete window[callbackName];
-            if (script.parentNode) script.parentNode.removeChild(script);
-          }
-        }, 10000);
-      }
-
-      // สร้าง payload
-      function buildPayload() {
-        const filters = {};
-        const filterItems = document.querySelectorAll('.filter-item');
-        
-        filterItems.forEach(item => {
-          const key = item.querySelector('.filter-key').value;
-          const value = item.querySelector('.filter-value').value;
-          if (key && value) {
-            filters[key] = value;
-          }
-        });
-
-        const options = {};
-        
-        const limit = document.getElementById('limit').value;
-        if (limit) options.limit = parseInt(limit);
-        
-        const offset = document.getElementById('offset').value;
-        if (offset) options.offset = parseInt(offset);
-        
-        if (Object.keys(filters).length > 0) {
-          options.filters = filters;
-        }
-
-        return {
-          token: document.getElementById('token').value,
-          sheetName: document.getElementById('sheetName').value,
-          id: document.getElementById('id').value || undefined,
-          options: options
-        };
-      }
-
-      // ดึงข้อมูล
-      function fetchData(useJsonp = true) {
-        if (!document.getElementById('token').value || !document.getElementById('sheetName').value) {
-          alert('กรุณากรอก Token และเลือก Sheet Name');
-          return;
-        }
-
-        const apiUrl = document.getElementById('apiUrlInput').value;
-        if (!apiUrl) {
-          alert('กรุณากรอก API URL');
-          return;
-        }
-
-        startTime = Date.now();
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('loadingStatus').textContent = useJsonp ? 'กำลังเรียกข้อมูลแบบ JSONP...' : 'กำลังเรียกข้อมูล...';
-        document.getElementById('error').style.display = 'none';
-        document.getElementById('stats').style.display = 'none';
-
-        if (useJsonp) {
-          // ใช้ JSONP
-          const payload = buildPayload();
-          const callbackName = 'jsonpCallback_' + Date.now();
-          
-          window[callbackName] = function(response) {
-            handleResponse(response);
-            delete window[callbackName];
-            if (script.parentNode) script.parentNode.removeChild(script);
-          };
-
-          const script = document.createElement('script');
-          const dataStr = encodeURIComponent(JSON.stringify(payload));
-          script.src = apiUrl + '?callback=' + callbackName + '&data=' + dataStr;
-          
-          script.onerror = function() {
-            document.getElementById('loading').style.display = 'none';
-            showError('เกิดข้อผิดพลาดในการโหลดสคริปต์');
-            delete window[callbackName];
-          };
-          
-          document.body.appendChild(script);
-
-          setTimeout(() => {
-            if (window[callbackName]) {
-              document.getElementById('loading').style.display = 'none';
-              showError('การเรียกข้อมูลหมดเวลา');
-              delete window[callbackName];
-              if (script.parentNode) script.parentNode.removeChild(script);
-            }
-          }, 30000);
-
-        } else {
-          // ใช้ fetch (อาจมี CORS error)
-          fetch(apiUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(buildPayload())
-          })
-          .then(response => {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('status').textContent = '202';
-            document.getElementById('message').textContent = 'Request sent (CORS mode)';
-            document.getElementById('count').textContent = '?';
-            document.getElementById('tableBody').innerHTML = `
-              <tr>
-                <td colspan="2" style="text-align: center; padding: 40px;">
-                  ⚠️ CORS Error: Google Apps Script ไม่รองรับ CORS<br>
-                  <button class="btn btn-success" onclick="fetchData(true)" style="margin-top: 10px;">
-                    ลองใช้ JSONP แทน
-                  </button>
-                </td>
-              </tr>
-            `;
-          })
-          .catch(error => {
-            document.getElementById('loading').style.display = 'none';
-            showError('Error: ' + error.message);
-          });
-        }
-      }
-
-      // จัดการ response
-      function handleResponse(response) {
-        const endTime = Date.now();
-        document.getElementById('loading').style.display = 'none';
-        
-        try {
-          console.log('Response received:', response);
-          
-          document.getElementById('status').textContent = response.code || 200;
-          document.getElementById('message').textContent = response.message || '-';
-          
-          if (response.success) {
-            const data = response.data || [];
-            document.getElementById('count').textContent = data.length;
-            displayData(data);
-            
-            // แสดงสถิติ
-            document.getElementById('stats').style.display = 'flex';
-            document.getElementById('responseTime').textContent = endTime - startTime;
-            document.getElementById('dataSize').textContent = 
-              (new TextEncoder().encode(JSON.stringify(data)).length / 1024).toFixed(2);
-          } else {
-            showError(response.message || 'Unknown error');
-          }
-        } catch (e) {
-          showError('Error parsing response: ' + e.message);
-        }
-      }
-
-      // แสดงข้อมูล
-      function displayData(data) {
-        const tableBody = document.getElementById('tableBody');
-        const tableHeader = document.getElementById('tableHeader');
-        
-        if (!data || data.length === 0) {
-          tableBody.innerHTML = `
-            <tr>
-              <td colspan="2" style="text-align: center; padding: 40px; color: #666;">
-                <span style="font-size: 48px;">🔍</span><br>
-                ไม่พบข้อมูล
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        // สร้าง headers
-        const headers = Object.keys(data[0]);
-        tableHeader.innerHTML = '<th>#</th>';
-        headers.forEach(header => {
-          tableHeader.innerHTML += `<th>${header}</th>`;
-        });
-
-        // แสดงข้อมูล
-        tableBody.innerHTML = '';
-        data.forEach((item, index) => {
-          let row = '<tr>';
-          row += `<td>${index + 1}</td>`;
-          headers.forEach(header => {
-            let value = item[header] || '-';
-            // ถ้าค่ายาวเกินไปให้ตัด
-            if (value.length > 50) value = value.substring(0, 50) + '...';
-            row += `<td title="${item[header] || ''}">${value}</td>`;
-          });
-          row += '</tr>';
-          tableBody.innerHTML += row;
-        });
-      }
-
-      // แสดง error
-      function showError(message) {
-        const errorDiv = document.getElementById('error');
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-        
-        document.getElementById('status').textContent = 'Error';
-        document.getElementById('message').textContent = message;
-        document.getElementById('count').textContent = '0';
-        
-        document.getElementById('tableBody').innerHTML = `
-          <tr>
-            <td colspan="2" style="text-align: center; padding: 40px; color: #666;">
-              <span style="font-size: 48px;">❌</span><br>
-              ${message}
-            </td>
-          </tr>
-        `;
-      }
-
-      // ล้างฟอร์ม
-      function clearForm() {
-        document.getElementById('token').value = '';
-        document.getElementById('sheetName').value = '';
-        document.getElementById('id').value = '';
-        document.getElementById('limit').value = '';
-        document.getElementById('offset').value = '0';
-        document.getElementById('filtersContainer').innerHTML = '';
-        document.getElementById('error').style.display = 'none';
-        document.getElementById('stats').style.display = 'none';
-        
-        document.getElementById('status').textContent = '-';
-        document.getElementById('message').textContent = '-';
-        document.getElementById('count').textContent = '0';
-        
-        document.getElementById('tableHeader').innerHTML = '<th>#</th><th>ข้อมูล</th>';
-        document.getElementById('tableBody').innerHTML = `
-          <tr>
-            <td colspan="2" style="text-align: center; padding: 40px; color: #666;">
-              <span style="font-size: 48px;">📭</span><br>
-              ยังไม่มีข้อมูล กรุณาดึงข้อมูลก่อน
-            </td>
-          </tr>
-        `;
-        
-        addFilter(); // เพิ่ม filter เริ่มต้น
-      }
-
-      // แสดงตัวอย่างโค้ด
-      function showSampleCode() {
-        document.getElementById('codeModal').style.display = 'block';
-      }
-
-      // ปิด modal
-      function closeModal() {
-        document.getElementById('codeModal').style.display = 'none';
-      }
-
-      // เริ่มต้น
-      window.onload = function() {
-        addFilter(); // เพิ่ม filter เริ่มต้น
-      };
-    </script>
-  </body>
+    <script src="script.js"></script>
+</body>
 </html>
-
