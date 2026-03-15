@@ -3,145 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pichit Data Viewer</title>
+    <title>Pichit Library API Client</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-100 p-8">
+<body class="bg-slate-50 min-h-screen p-4 md:p-10">
 
-    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h1 class="text-2xl font-bold mb-6 text-gray-800">ระบบดึงข้อมูลจาก Pichit API</h1>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <input type="text" id="idFilter" placeholder="ค้นหาด้วย ID" class="border p-2 rounded">
-            <input type="text" id="nameFilter" placeholder="ค้นหาด้วยชื่อ (Advanced)" class="border p-2 rounded">
-            <button onclick="fetchData()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                ดึงข้อมูล
-            </button>
-        </div>
-
-        <div id="loading" class="hidden text-center text-blue-500 my-4">กำลังโหลดข้อมูล...</div>
-
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-200">
-                <thead class="bg-gray-50">
-                    <tr id="tableHeader">
-                        </tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-gray-200">
-                    </tbody>
-            </table>
-        </div>
-
-        <div class="mt-4 flex justify-between items-center text-sm text-gray-600">
-            <div id="recordCount">จำนวนข้อมูลทั้งหมด: 0</div>
-            <div class="space-x-2">
-                <button onclick="changePage(-1)" class="px-3 py-1 border rounded hover:bg-gray-100">ก่อนหน้า</button>
-                <span id="currentPage">หน้า 1</span>
-                <button onclick="changePage(1)" class="px-3 py-1 border rounded hover:bg-gray-100">ถัดไป</button>
+    <div class="max-w-5xl mx-auto">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-slate-200">
+            <h1 class="text-2xl font-bold text-slate-800 mb-2">ระบบดึงข้อมูลจาก Google Sheet</h1>
+            <p class="text-slate-500 mb-6">ดึงข้อมูลผ่าน Pichit Library API</p>
+            
+            <div class="flex flex-wrap gap-3">
+                <button id="btnFetch" onclick="loadData()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-semibold transition all shadow-md flex items-center">
+                    <span id="btnText">คลิกเพื่อดึงข้อมูล</span>
+                    <div id="loader" class="hidden ml-3 w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </button>
+                
+                <button onclick="clearTable()" class="text-slate-600 hover:bg-slate-100 px-4 py-2.5 rounded-lg transition">
+                    ล้างหน้าจอ
+                </button>
             </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-100 border-b border-slate-200">
+                        <tr id="tableHead">
+                            <th class="p-4 text-slate-400 font-medium italic">รอการดึงข้อมูล...</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="summary" class="mt-4 text-sm text-slate-500 hidden">
+            พบข้อมูลทั้งหมด <span id="totalCount" class="font-bold text-indigo-600">0</span> รายการ
         </div>
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec';
-        const TOKEN = 'test_token_123'; // ต้องตรงกับ CONFIG.SECURITY_TOKEN ใน Google Apps Script
-        
-        let offset = 0;
-        const limit = 5;
+        // กำหนดค่า Config
+        const API_URL = "https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec";
+        const REQUEST_BODY = {
+            token: "test_token_123", // ต้องตรงกับใน Code.gs
+            sheetName: "Sheet1",
+            searchText: "", 
+            options: {
+                limit: 20,
+                offset: 0
+            }
+        };
 
-        async function fetchData() {
-            const idInput = document.getElementById('idFilter').value;
-            const nameInput = document.getElementById('nameFilter').value;
-            const loading = document.getElementById('loading');
-            
-            loading.classList.remove('hidden');
+        async function loadData() {
+            const btn = document.getElementById('btnFetch');
+            const btnText = document.getElementById('btnText');
+            const loader = document.getElementById('loader');
+            const tableHead = document.getElementById('tableHead');
+            const tableBody = document.getElementById('tableBody');
+            const summary = document.getElementById('summary');
 
-            // เตรียม Payload ตามโครงสร้าง doPost ของคุณ
-            const payload = {
-                token: TOKEN,
-                sheetName: "Sheet1",
-                id: idInput || null,
-                options: {
-                    limit: limit,
-                    offset: offset,
-                    filters: nameInput ? { "name": nameInput } : {} // ตัวอย่างการใช้ Advanced Filter
-                }
-            };
+            // 1. แสดงสถานะกำลังโหลด
+            btn.disabled = true;
+            btnText.innerText = "กำลังดึงข้อมูล...";
+            loader.classList.remove('hidden');
 
             try {
+                // 2. เรียก API
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // สำคัญ: Apps Script มักติด CORS ถ้าเรียกตรงๆ ให้ใช้ no-cors หรือจัดการทางฝั่ง Server
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(REQUEST_BODY)
                 });
 
-                /* หมายเหตุ: หากใช้ mode: 'no-cors' คุณจะไม่สามารถอ่าน response body ได้ 
-                   เพื่อการทดสอบที่สมบูรณ์ แนะนำให้เปิด CORS ใน Apps Script หรือใช้ Redirect เทคนิค
-                */
-                
-                // สำหรับการทดสอบผ่าน Web App ปกติ ให้ใช้ code ด้านล่าง (ต้องแน่ใจว่า Apps Script return ContentService.createTextOutput)
-                const realResponse = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                
-                const result = await realResponse.json();
+                const result = await response.json();
 
-                if (result.success) {
+                if (result.success && result.data.length > 0) {
                     renderTable(result.data);
-                    document.getElementById('recordCount').innerText = `จำนวนข้อมูลทั้งหมด: ${result.total}`;
+                    document.getElementById('totalCount').innerText = result.total;
+                    summary.classList.remove('hidden');
                 } else {
-                    alert('Error: ' + result.message);
+                    alert("ไม่พบข้อมูลหรือเกิดข้อผิดพลาด: " + (result.message || "Unknown error"));
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ API');
+                console.error("Fetch Error:", error);
+                alert("การเชื่อมต่อล้มเหลว ตรวจสอบ Console หรือการ Deploy Web App");
             } finally {
-                loading.classList.add('hidden');
+                // 3. คืนค่าสถานะปุ่ม
+                btn.disabled = false;
+                btnText.innerText = "คลิกเพื่อดึงข้อมูล";
+                loader.classList.add('hidden');
             }
         }
 
         function renderTable(data) {
-            const head = document.getElementById('tableHeader');
-            const body = document.getElementById('tableBody');
-            head.innerHTML = '';
-            body.innerHTML = '';
+            const tableHead = document.getElementById('tableHead');
+            const tableBody = document.getElementById('tableBody');
+            
+            // ล้างตารางเดิม
+            tableHead.innerHTML = '';
+            tableBody.innerHTML = '';
 
-            if (data.length === 0) {
-                body.innerHTML = '<tr><td colspan="100%" class="p-4 text-center">ไม่พบข้อมูล</td></tr>';
-                return;
-            }
-
-            // สร้างหัวตารางจาก Keys ของ Object แรก
-            const keys = Object.keys(data[0]);
-            keys.forEach(key => {
+            // 1. สร้างหัวตาราง (Headers) จาก Keys ของ Object
+            const headers = Object.keys(data[0]);
+            headers.forEach(key => {
                 const th = document.createElement('th');
-                th.className = 'px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase';
+                th.className = "p-4 text-slate-700 font-semibold text-sm uppercase";
                 th.innerText = key;
-                head.appendChild(th);
+                tableHead.appendChild(th);
             });
 
-            // สร้างแถวข้อมูล
-            data.forEach(row => {
+            // 2. สร้างแถวข้อมูล (Rows)
+            data.forEach(item => {
                 const tr = document.createElement('tr');
-                keys.forEach(key => {
+                tr.className = "hover:bg-slate-50 transition";
+                headers.forEach(key => {
                     const td = document.createElement('td');
-                    td.className = 'px-4 py-2 whitespace-nowrap text-sm text-gray-700';
-                    td.innerText = row[key];
+                    td.className = "p-4 text-slate-600 text-sm";
+                    td.innerText = item[key] || '-';
                     tr.appendChild(td);
                 });
-                body.appendChild(tr);
+                tableBody.appendChild(tr);
             });
         }
 
-        function changePage(step) {
-            offset = Math.max(0, offset + (step * limit));
-            document.getElementById('currentPage').innerText = `หน้า ${(offset/limit) + 1}`;
-            fetchData();
+        function clearTable() {
+            document.getElementById('tableHead').innerHTML = '<th class="p-4 text-slate-400 font-medium italic">รอการดึงข้อมูล...</th>';
+            document.getElementById('tableBody').innerHTML = '';
+            document.getElementById('summary').classList.add('hidden');
         }
-
-        // โหลดข้อมูลครั้งแรก
-        fetchData();
     </script>
 </body>
 </html>
