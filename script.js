@@ -337,4 +337,273 @@ function addFilterField() {
     filterCount++;
     const container = document.getElementById('filtersContainer');
     
-    const filterRow = document.createElement
+    const filterRow = document.createElement('div');
+    filterRow.className = 'filter-row fade-in';
+    filterRow.id = `filter-${filterCount}`;
+    
+    filterRow.innerHTML = `
+        <input type="text" class="filter-key" placeholder="ชื่อคอลัมน์ (เช่น name)">
+        <input type="text" class="filter-value" placeholder="ค่าที่ต้องการกรอง">
+        <button onclick="removeFilter(${filterCount})">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    container.appendChild(filterRow);
+}
+
+// ฟังก์ชันลบตัวกรอง
+function removeFilter(id) {
+    const filterRow = document.getElementById(`filter-${id}`);
+    if (filterRow) {
+        filterRow.remove();
+    }
+}
+
+// ฟังก์ชันแสดง/ซ่อนตัวกรองเพิ่มเติม
+function toggleAdvancedFilters() {
+    const content = document.getElementById('advancedFiltersContent');
+    const icon = document.getElementById('toggleIcon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.className = 'fas fa-chevron-up';
+    } else {
+        content.style.display = 'none';
+        icon.className = 'fas fa-chevron-down';
+    }
+}
+
+// ฟังก์ชันรีเซ็ตตัวกรอง
+function resetFilters() {
+    document.getElementById('searchId').value = '';
+    document.getElementById('limit').value = '10';
+    document.getElementById('offset').value = '0';
+    document.getElementById('filtersContainer').innerHTML = '';
+    filterCount = 0;
+    addFilterField(); // เพิ่มตัวกรองเริ่มต้น 1 อัน
+    
+    document.getElementById('resultStats').style.display = 'none';
+    document.getElementById('pagination').style.display = 'none';
+    document.getElementById('tableHeader').innerHTML = '<th>#</th><th>ข้อมูล</th>';
+    document.getElementById('tableBody').innerHTML = `
+        <tr>
+            <td colspan="2" class="empty-state">
+                <i class="fas fa-inbox fa-3x"></i>
+                <p>กรุณากดปุ่ม "ดึงข้อมูล" เพื่อแสดงผล</p>
+            </td>
+        </tr>
+    `;
+}
+
+// ฟังก์ชันแสดง loading
+function showLoading(show) {
+    document.getElementById('loading').style.display = show ? 'block' : 'none';
+}
+
+// ฟังก์ชันแสดง error
+function showError(message) {
+    document.getElementById('errorMessage').style.display = 'flex';
+    document.getElementById('errorText').textContent = message;
+}
+
+// ฟังก์ชันซ่อน error
+function hideError() {
+    document.getElementById('errorMessage').style.display = 'none';
+}
+
+// ฟังก์ชันเพิ่มประวัติ
+function addToHistory(message, status, responseTime, dataCount = 0) {
+    const history = {
+        time: new Date().toLocaleTimeString(),
+        date: new Date().toLocaleDateString(),
+        message: message,
+        status: status,
+        responseTime: responseTime,
+        dataCount: dataCount
+    };
+    
+    historyData.unshift(history);
+    
+    // เก็บเฉพาะ 20 รายการล่าสุด
+    if (historyData.length > 20) {
+        historyData.pop();
+    }
+    
+    localStorage.setItem('apiHistory', JSON.stringify(historyData));
+    displayHistory();
+}
+
+// ฟังก์ชันแสดงประวัติ
+function displayHistory() {
+    const historyList = document.getElementById('historyList');
+    
+    if (historyData.length === 0) {
+        historyList.innerHTML = '<div class="empty-state" style="padding: 20px;">ไม่มีประวัติ</div>';
+        return;
+    }
+    
+    historyList.innerHTML = '';
+    historyData.forEach(item => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        historyItem.innerHTML = `
+            <div>
+                <span class="time">${item.time}</span>
+                <span style="margin-left: 10px;">${item.message}</span>
+                ${item.dataCount ? `<small>(${item.dataCount} รายการ)</small>` : ''}
+            </div>
+            <span class="status ${item.status}">
+                ${item.responseTime}ms
+            </span>
+        `;
+        historyList.appendChild(historyItem);
+    });
+}
+
+// ฟังก์ชันล้างประวัติ
+function clearHistory() {
+    if (confirm('ต้องการล้างประวัติทั้งหมด?')) {
+        historyData = [];
+        localStorage.removeItem('apiHistory');
+        displayHistory();
+    }
+}
+
+// ฟังก์ชันแสดงวิธีการใช้งาน
+function showHowTo() {
+    document.getElementById('howToModal').style.display = 'block';
+}
+
+// ฟังก์ชันปิด modal
+function closeModal() {
+    document.getElementById('howToModal').style.display = 'none';
+}
+
+// ฟังก์ชันคัดลอกตัวอย่างโค้ด
+function copySampleCode() {
+    const sampleCode = `// ตัวอย่างการเรียก API ด้วย JavaScript
+async function fetchData() {
+    const response = await fetch('YOUR_API_URL', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            token: 'YOUR_TOKEN',
+            sheetName: 'Sheet1',
+            options: {
+                limit: 10
+            }
+        })
+    });
+    
+    const data = await response.json();
+    console.log(data);
+}`;
+
+    navigator.clipboard.writeText(sampleCode).then(() => {
+        alert('คัดลอกตัวอย่างโค้ดแล้ว');
+    });
+}
+
+// ฟังก์ชัน export ข้อมูลเป็น CSV
+function exportToCSV() {
+    if (!currentData || currentData.length === 0) {
+        alert('ไม่มีข้อมูลให้ export');
+        return;
+    }
+
+    const headers = Object.keys(currentData[0]);
+    const csvContent = [
+        headers.join(','),
+        ...currentData.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `google-sheets-data-${new Date().toISOString()}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// ฟังก์ชัน export เป็น JSON
+function exportToJSON() {
+    if (!currentData || currentData.length === 0) {
+        alert('ไม่มีข้อมูลให้ export');
+        return;
+    }
+
+    const jsonContent = JSON.stringify(currentData, null, 2);
+    const blob = new Blob([jsonContent], { type: 'application/json' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `google-sheets-data-${new Date().toISOString()}.json`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// ฟังก์ชัน refresh ข้อมูล
+function refreshData() {
+    if (currentData.length > 0) {
+        fetchData();
+    }
+}
+
+// ฟังก์ชัน copy ข้อมูล
+function copyData() {
+    if (!currentData || currentData.length === 0) {
+        alert('ไม่มีข้อมูลให้คัดลอก');
+        return;
+    }
+
+    const jsonString = JSON.stringify(currentData, null, 2);
+    navigator.clipboard.writeText(jsonString).then(() => {
+        alert('คัดลอกข้อมูลแล้ว');
+    });
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // เพิ่มตัวกรองเริ่มต้น
+    addFilterField();
+    
+    // แสดงประวัติ
+    displayHistory();
+    
+    // เพิ่มปุ่ม export
+    const actionButtons = document.querySelector('.action-buttons');
+    actionButtons.innerHTML += `
+        <button class="btn-info" onclick="exportToCSV()">
+            <i class="fas fa-file-csv"></i> Export CSV
+        </button>
+        <button class="btn-info" onclick="exportToJSON()">
+            <i class="fas fa-file-code"></i> Export JSON
+        </button>
+        <button class="btn-info" onclick="copyData()">
+            <i class="fas fa-copy"></i> Copy Data
+        </button>
+        <button class="btn-info" onclick="refreshData()">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    `;
+});
+
+// ปิด modal เมื่อคลิกนอก modal
+window.onclick = function(event) {
+    const modal = document.getElementById('howToModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+};
