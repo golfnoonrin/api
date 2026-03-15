@@ -3,312 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets API Client - Bootstrap 5 & AG Grid v31</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- AG Grid CSS - ใช้ theme alpine -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
-
-    <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f0f2f5; }
-        .header-gradient { background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%); color: white; padding: 2.5rem 0; margin-bottom: 2rem; border-radius: 0 0 2rem 2rem; }
-        /* กำหนดความสูงของ Grid และใช้ alpine theme class */
-        #myGrid { height: 550px; width: 100%; }
-        .ag-theme-alpine {
-            --ag-header-background-color: #f8f9fa;
-            --ag-header-foreground-color: #495057;
-            --ag-font-size: 14px;
-            --ag-font-family: 'Sarabun', sans-serif;
-            --ag-border-radius: 8px;
-            --ag-card-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        /* ปรับแต่งเพิ่มเติมสำหรับ alpine theme */
-        .ag-theme-alpine .ag-header {
-            border-bottom: 2px solid #e9ecef;
-            font-weight: 600;
-        }
-        .ag-theme-alpine .ag-row-hover {
-            background-color: #f1f5f9 !important;
-        }
-        .ag-theme-alpine .ag-row-selected {
-            background-color: #e6f0ff !important;
-        }
-        .card { border: none; border-radius: 1rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05); }
-        .json-view {
-            background-color: #f8f9fa;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            max-height: 300px;
-            overflow: auto;
-        }
-        /* ปุ่มสวยงาม */
-        .btn-primary {
-            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
-            border: none;
-            padding: 0.6rem 1.2rem;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #3f44a0 0%, #7a80e6 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(78, 84, 200, 0.3);
-        }
-        .badge.bg-primary {
-            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%) !important;
-            padding: 0.6rem 1rem;
-        }
-    </style>
+    <title>Pichit Data Viewer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 p-8">
 
-    <div class="header-gradient text-center">
-        <div class="container">
-            <h1 class="fw-bold">📊 Google Sheets API Dashboard</h1>
-            <p class="lead">ระบบดึงข้อมูลและจัดการตารางด้วย AG Grid & Bootstrap 5</p>
-        </div>
-    </div>
-
-    <div class="container mb-5">
-        <div class="card mb-4">
-            <div class="card-body p-4">
-                <h5 class="card-title mb-4 d-flex align-items-center">
-                    <span class="me-2">⚙️</span> ตั้งค่าการดึงข้อมูล
-                </h5>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">🔑 API Token</label>
-                        <input type="text" id="token" class="form-control" value="test_token_123">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">📄 ชื่อ Sheet</label>
-                        <input type="text" id="sheetName" class="form-control" value="Sheet1">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">🆔 ค้นหาด้วย ID (Optional)</label>
-                        <input type="text" id="idFilter" class="form-control" placeholder="ระบุ ID เฉพาะเจาะจง">
-                    </div>
-                    <div class="col-md-7">
-                        <label class="form-label fw-semibold">🔎 ค้นหาในตาราง (Quick Search)</label>
-                        <input type="text" id="globalSearch" class="form-control" placeholder="พิมพ์คำที่ต้องการค้นหา..." oninput="onQuickFilterChanged()">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-semibold">📌 แถวสูงสุด</label>
-                        <input type="number" id="limit" class="form-control" value="100">
-                    </div>
-                    <div class="col-md-3 d-flex align-items-end gap-2">
-                        <button class="btn btn-primary w-100 fw-bold" onclick="fetchData()">📥 ดึงข้อมูล</button>
-                        <button class="btn btn-outline-success" onclick="exportToCSV()" title="Export เป็น CSV">
-                            📥 CSV
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-6 text-gray-800">ระบบดึงข้อมูลจาก Pichit API</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <input type="text" id="idFilter" placeholder="ค้นหาด้วย ID" class="border p-2 rounded">
+            <input type="text" id="nameFilter" placeholder="ค้นหาด้วยชื่อ (Advanced)" class="border p-2 rounded">
+            <button onclick="fetchData()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                ดึงข้อมูล
+            </button>
         </div>
 
-        <div class="container mb-5">
-            <div class="card mb-4 overflow-hidden">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <span class="fw-bold text-secondary">📋 ตารางข้อมูลผลลัพธ์ (Alpine Theme)</span>
-                    <span class="badge rounded-pill bg-primary" id="resultCount">0 รายการ</span>
-                </div>
-                <div class="card-body p-0">
-                    <!-- เปลี่ยนเป็น class ag-theme-alpine -->
-                    <div id="myGrid" class="ag-theme-alpine"></div>
-                </div>
-            </div>
+        <div id="loading" class="hidden text-center text-blue-500 my-4">กำลังโหลดข้อมูล...</div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-200">
+                <thead class="bg-gray-50">
+                    <tr id="tableHeader">
+                        </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-gray-200">
+                    </tbody>
+            </table>
         </div>
 
-        <div class="card">
-            <div class="card-header bg-light">
-                <ul class="nav nav-tabs card-header-tabs" id="debugTab" role="tablist">
-                    <li class="nav-item">
-                        <button class="nav-link active fw-bold" id="raw-tab" data-bs-toggle="tab" data-bs-target="#raw" type="button">📦 Raw JSON</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link fw-bold" id="curl-tab" data-bs-toggle="tab" data-bs-target="#curl" type="button">🔧 cURL Command</button>
-                    </li>
-                </ul>
-            </div>
-            <div class="card-body tab-content">
-                <div class="tab-pane fade show active" id="raw">
-                    <pre class="json-view" id="rawJson">{}</pre>
-                </div>
-                <div class="tab-pane fade" id="curl">
-                    <pre class="json-view" id="curlCommand">-- รอดำเนินการดึงข้อมูล --</pre>
-                </div>
+        <div class="mt-4 flex justify-between items-center text-sm text-gray-600">
+            <div id="recordCount">จำนวนข้อมูลทั้งหมด: 0</div>
+            <div class="space-x-2">
+                <button onclick="changePage(-1)" class="px-3 py-1 border rounded hover:bg-gray-100">ก่อนหน้า</button>
+                <span id="currentPage">หน้า 1</span>
+                <button onclick="changePage(1)" class="px-3 py-1 border rounded hover:bg-gray-100">ถัดไป</button>
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
 
     <script>
-        // กำหนด URL ของ Google Apps Script ของคุณ
         const API_URL = 'https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec';
+        const TOKEN = 'test_token_123'; // ต้องตรงกับ CONFIG.SECURITY_TOKEN ใน Google Apps Script
         
-        let gridApi; // ตัวแปรสำหรับเก็บ Instance ของ AG Grid
+        let offset = 0;
+        const limit = 5;
 
-        // ตั้งค่าเริ่มต้นของ AG Grid
-        const gridOptions = {
-            // ไม่ต้องกำหนด theme ที่นี่ ใช้ CSS class แทน
-            columnDefs: [],
-            rowData: [],
-            defaultColDef: {
-                sortable: true,
-                filter: true,
-                resizable: true,
-                flex: 1,
-                minWidth: 120,
-                floatingFilter: true,
-                filterParams: {
-                    buttons: ['reset', 'apply']
-                }
-            },
-            pagination: true,
-            paginationPageSize: 10,
-            paginationPageSizeSelector: [10, 20, 50, 100],
-            suppressMenuHide: true,
-            enableCellTextSelection: true,
-            ensureDomOrder: true,
-            overlayLoadingTemplate: '<span class="ag-overlay-loading-center">กำลังโหลดข้อมูล...</span>',
-            overlayNoRowsTemplate: '<span class="ag-overlay-no-rows-center">ไม่พบข้อมูล</span>',
-            // เพิ่ม animation ให้ดู smooth
-            animateRows: true,
-            // ปรับแต่งการแสดงผล
-            rowHeight: 48,
-            headerHeight: 56
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const gridDiv = document.querySelector('#myGrid');
-            // สร้าง grid โดยใช้ gridOptions
-            gridApi = agGrid.createGrid(gridDiv, gridOptions);
-            fetchData();
-        });
-
-        // ฟังก์ชันดึงข้อมูล
         async function fetchData() {
-            if (!gridApi) return;
+            const idInput = document.getElementById('idFilter').value;
+            const nameInput = document.getElementById('nameFilter').value;
+            const loading = document.getElementById('loading');
             
-            gridApi.showLoadingOverlay();
-            
+            loading.classList.remove('hidden');
+
+            // เตรียม Payload ตามโครงสร้าง doPost ของคุณ
             const payload = {
-                token: document.getElementById('token').value,
-                sheetName: document.getElementById('sheetName').value,
+                token: TOKEN,
+                sheetName: "Sheet1",
+                id: idInput || null,
                 options: {
-                    limit: parseInt(document.getElementById('limit').value),
-                    filters: {}
+                    limit: limit,
+                    offset: offset,
+                    filters: nameInput ? { "name": nameInput } : {} // ตัวอย่างการใช้ Advanced Filter
                 }
             };
 
-            const idVal = document.getElementById('idFilter').value;
-            if (idVal) payload.id = idVal;
-
-            // อัปเดต cURL สำหรับ Developer
-            updateCurlCommand(payload);
-            
-            // เรียกใช้ JSONP (รองรับ CORS ของ Google Script)
-            useJSONP(payload);
-        }
-
-        function useJSONP(payload) {
-            const callbackName = 'jsonp_callback_' + Date.now();
-            window[callbackName] = function(response) {
-                handleResponse(response);
-                // ลบ script tag ออกหลังจากใช้งานเสร็จ
-                const scriptTag = document.getElementById('jsonp-script');
-                if (scriptTag) scriptTag.remove();
-                delete window[callbackName];
-            };
-
-            const params = new URLSearchParams({
-                callback: callbackName,
-                sheetName: payload.sheetName
-            });
-            if (payload.id) params.append('id', payload.id);
-
-            const script = document.createElement('script');
-            script.id = 'jsonp-script';
-            script.src = `${API_URL}?${params.toString()}`;
-            document.body.appendChild(script);
-        }
-
-        function handleResponse(response) {
             try {
-                if (response && response.success) {
-                    const data = response.data || [];
-                    
-                    // สร้างหัวตารางใหม่จาก Keys ของข้อมูล JSON
-                    if (data.length > 0) {
-                        const keys = Object.keys(data[0]);
-                        const colDefs = keys.map(key => ({
-                            field: key,
-                            headerName: key.charAt(0).toUpperCase() + key.slice(1),
-                            // เพิ่ม filter แต่ละคอลัมน์ตามชนิดข้อมูล
-                            filter: typeof data[0][key] === 'number' ? 'agNumberColumnFilter' : 'agTextColumnFilter',
-                            // จัดการข้อความยาวเกิน
-                            tooltipField: key,
-                            cellStyle: { 
-                                'display': 'flex', 
-                                'align-items': 'center' 
-                            }
-                        }));
-                        gridApi.setGridOption('columnDefs', colDefs);
-                    } else {
-                        // ถ้าไม่มีข้อมูล ให้แสดงคอลัมน์เริ่มต้น
-                        gridApi.setGridOption('columnDefs', [
-                            { field: 'message', headerName: 'ข้อความ', flex: 1 }
-                        ]);
-                    }
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // สำคัญ: Apps Script มักติด CORS ถ้าเรียกตรงๆ ให้ใช้ no-cors หรือจัดการทางฝั่ง Server
+                    body: JSON.stringify(payload)
+                });
 
-                    // ใส่ข้อมูลลงในตาราง
-                    gridApi.setGridOption('rowData', data);
-                    
-                    // อัปเดต UI
-                    document.getElementById('resultCount').textContent = `${data.length} รายการ`;
-                    document.getElementById('rawJson').textContent = JSON.stringify(response, null, 2);
+                /* หมายเหตุ: หากใช้ mode: 'no-cors' คุณจะไม่สามารถอ่าน response body ได้ 
+                   เพื่อการทดสอบที่สมบูรณ์ แนะนำให้เปิด CORS ใน Apps Script หรือใช้ Redirect เทคนิค
+                */
+                
+                // สำหรับการทดสอบผ่าน Web App ปกติ ให้ใช้ code ด้านล่าง (ต้องแน่ใจว่า Apps Script return ContentService.createTextOutput)
+                const realResponse = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await realResponse.json();
+
+                if (result.success) {
+                    renderTable(result.data);
+                    document.getElementById('recordCount').innerText = `จำนวนข้อมูลทั้งหมด: ${result.total}`;
                 } else {
-                    const errorMsg = response?.message || 'ไม่ทราบสาเหตุ';
-                    alert('เกิดข้อผิดพลาด: ' + errorMsg);
-                    gridApi.setGridOption('rowData', []);
-                    gridApi.setGridOption('columnDefs', [
-                        { field: 'error', headerName: 'ข้อผิดพลาด', flex: 1 }
-                    ]);
-                    document.getElementById('rawJson').textContent = JSON.stringify(response, null, 2);
+                    alert('Error: ' + result.message);
                 }
             } catch (error) {
-                console.error('Error handling response:', error);
-                alert('เกิดข้อผิดพลาดในการประมวลผลข้อมูล');
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ API');
             } finally {
-                gridApi.hideOverlay();
+                loading.classList.add('hidden');
             }
         }
 
-        // ฟังก์ชันค้นหาแบบเร็ว
-        function onQuickFilterChanged() {
-            const searchVal = document.getElementById('globalSearch').value;
-            gridApi.setGridOption('quickFilterText', searchVal);
-        }
+        function renderTable(data) {
+            const head = document.getElementById('tableHeader');
+            const body = document.getElementById('tableBody');
+            head.innerHTML = '';
+            body.innerHTML = '';
 
-        // ฟังก์ชัน Export ข้อมูลในตารางเป็น CSV
-        function exportToCSV() {
-            gridApi.exportDataAsCsv({
-                fileName: `export_data_${new Date().toISOString().slice(0,10)}.csv`,
-                allColumns: true,
-                processCellCallback: (params) => {
-                    // จัดการข้อมูลพิเศษก่อน export ถ้าต้องการ
-                    return params.value;
-                }
+            if (data.length === 0) {
+                body.innerHTML = '<tr><td colspan="100%" class="p-4 text-center">ไม่พบข้อมูล</td></tr>';
+                return;
+            }
+
+            // สร้างหัวตารางจาก Keys ของ Object แรก
+            const keys = Object.keys(data[0]);
+            keys.forEach(key => {
+                const th = document.createElement('th');
+                th.className = 'px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase';
+                th.innerText = key;
+                head.appendChild(th);
+            });
+
+            // สร้างแถวข้อมูล
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                keys.forEach(key => {
+                    const td = document.createElement('td');
+                    td.className = 'px-4 py-2 whitespace-nowrap text-sm text-gray-700';
+                    td.innerText = row[key];
+                    tr.appendChild(td);
+                });
+                body.appendChild(tr);
             });
         }
 
-        function updateCurlCommand(payload) {
-            const command = `curl -X POST "${API_URL}" \\\n -H "Content-Type: application/json" \\\n -d '${JSON.stringify(payload, null, 2)}'`;
-            document.getElementById('curlCommand').textContent = command;
+        function changePage(step) {
+            offset = Math.max(0, offset + (step * limit));
+            document.getElementById('currentPage').innerText = `หน้า ${(offset/limit) + 1}`;
+            fetchData();
         }
+
+        // โหลดข้อมูลครั้งแรก
+        fetchData();
     </script>
 </body>
 </html>
