@@ -14,50 +14,70 @@
 
     <div class="max-w-4xl mx-auto">
         <div class="bg-white p-6 rounded-xl shadow-sm border mb-6">
-            <h2 class="text-xl font-bold mb-4">ค้นหาข้อมูล</h2>
+            <h2 class="text-xl font-bold mb-4 text-gray-800">ค้นหาข้อมูลผ่าน API</h2>
             
-            <div class="flex gap-4">
-                <input type="text" id="searchText" placeholder="พิมพ์คำที่ต้องการค้นหา..." 
-                       class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Access Token</label>
+                    <input type="password" id="userToken" placeholder="กรอก Token ของคุณ..." 
+                           class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
                 
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">คำที่ต้องการค้นหา</label>
+                    <input type="text" id="searchText" placeholder="พิมพ์ชื่อ, ID หรือข้อมูลอื่นๆ..." 
+                           class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+            </div>
+
+            <div class="flex justify-end">
                 <button onclick="fetchData()" id="btnSearch" 
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 rounded-lg font-semibold transition flex items-center">
-                    <span>ค้นหา</span>
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-2.5 rounded-lg font-semibold transition-all flex items-center shadow-md">
+                    <span>เริ่มค้นหา</span>
                     <div id="loader" class="hidden ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 </button>
             </div>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm overflow-hidden border">
-            <table class="w-full text-left">
-                <thead class="bg-gray-100 border-b">
-                    <tr id="tableHeader">
-                        <th class="p-4 text-gray-500 font-medium italic">ยังไม่มีข้อมูล...</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-gray-100"></tbody>
-            </table>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 border-b">
+                        <tr id="tableHeader">
+                            <th class="p-4 text-gray-500 font-medium italic">กรุณากรอก Token และกดปุ่มค้นหา</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-gray-100"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
+        // URL ของ Google Apps Script Web App
         const API_URL = "https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec";
-        const TOKEN = "test_token_123";
 
         async function fetchData() {
+            const tokenInput = document.getElementById('userToken').value.trim();
             const searchText = document.getElementById('searchText').value;
             const btn = document.getElementById('btnSearch');
             const loader = document.getElementById('loader');
+
+            // ตรวจสอบว่ากรอก Token หรือยัง
+            if (!tokenInput) {
+                alert("กรุณากรอก Token ก่อนใช้งาน");
+                document.getElementById('userToken').focus();
+                return;
+            }
 
             // แสดงสถานะโหลด
             btn.disabled = true;
             loader.classList.remove('hidden');
 
-            // เตรียมข้อมูลส่งไปที่หลังบ้าน (ส่งแค่ searchText)
             const requestData = {
-                token: TOKEN,
+                token: tokenInput, // ใช้ค่าจากช่อง Input
                 sheetName: "Sheet1",
-                searchText: searchText, // ส่งค่าจากช่อง input
+                searchText: searchText,
                 options: {
                     limit: 20,
                     offset: 0
@@ -75,11 +95,16 @@
                 if (result.success) {
                     renderTable(result.data);
                 } else {
-                    alert("Error: " + result.message);
+                    // กรณี Token ผิดหรือสถานะไม่ Active ตามที่เขียนไว้ในหลังบ้าน
+                    alert("แจ้งเตือน: " + result.message);
+                    if (result.message.includes("Unauthorized")) {
+                        document.getElementById('tableBody').innerHTML = '';
+                        document.getElementById('tableHeader').innerHTML = '<th class="p-4 text-red-500 italic">Access Denied: Token ไม่ถูกต้อง</th>';
+                    }
                 }
             } catch (error) {
                 console.error("Error:", error);
-                alert("เชื่อมต่อ API ไม่สำเร็จ");
+                alert("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
             } finally {
                 btn.disabled = false;
                 loader.classList.add('hidden');
@@ -93,11 +118,10 @@
             body.innerHTML = '';
 
             if (data.length === 0) {
-                body.innerHTML = '<tr><td class="p-10 text-center text-gray-400">ไม่พบข้อมูล</td></tr>';
+                body.innerHTML = '<tr><td class="p-10 text-center text-gray-400">ไม่พบข้อมูลที่ตรงกับคำค้นหา</td></tr>';
                 return;
             }
 
-            // สร้างหัวจากข้อมูลที่ได้
             const keys = Object.keys(data[0]);
             keys.forEach(key => {
                 const th = document.createElement('th');
@@ -106,10 +130,9 @@
                 head.appendChild(th);
             });
 
-            // สร้างแถวข้อมูล
             data.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50";
+                tr.className = "hover:bg-gray-50 transition-colors";
                 keys.forEach(key => {
                     const td = document.createElement('td');
                     td.className = "p-4 text-sm text-gray-600";
