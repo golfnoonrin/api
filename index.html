@@ -130,7 +130,7 @@
                     </div>
                     <div class="stat-item">
                         <i class="fas fa-clock"></i>
-                        <span>เวลาที่ใช้: <strong id="responseTime">0</strong> ms</span>
+                        <span>เวลาที่ใช้: <strong id="Time">0</strong> ms</span>
                     </div>
                     <div class="stat-item">
                         <i class="fas fa-hdd"></i>
@@ -312,12 +312,12 @@
             const startTime = Date.now();
 
             try {
-                // ลองใช้ fetch แบบปกติ
+                // Replace your existing fetch block with this:
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    mode: 'cors',
+                    mode: 'no-cors', // <--- Try changing 'cors' to 'no-cors' if you only need to send data
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'text/plain', // GAS sometimes prefers plain text to avoid pre-flight
                     },
                     body: JSON.stringify(payload)
                 });
@@ -722,7 +722,7 @@
                         ${item.dataCount ? `<small>(${item.dataCount} รายการ)</small>` : ''}
                     </div>
                     <span class="status ${item.status}">
-                        ${item.responseTime}ms
+                        ${item.Time}ms
                     </span>
                 `;
                 historyList.appendChild(historyItem);
