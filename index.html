@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets API Client - Bootstrap 5 & AG Grid</title>
+    <title>Google Sheets API Client - Bootstrap 5 & AG Grid v31</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
@@ -13,32 +13,41 @@
     <style>
         body {
             font-family: 'Sarabun', sans-serif;
-            background-color: #f4f7f6;
+            background-color: #f0f2f5;
         }
         .header-gradient {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
             color: white;
-            padding: 2rem 0;
+            padding: 2.5rem 0;
             margin-bottom: 2rem;
-            border-radius: 0 0 1.5rem 1.5rem;
+            border-radius: 0 0 2rem 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         #myGrid {
-            height: 500px;
+            height: 550px;
             width: 100%;
         }
         .card {
             border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
         }
         .json-view {
-            background: #272822;
-            color: #f8f8f2;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
+            background: #2d2d2d;
+            color: #76d9e6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
             max-height: 400px;
             overflow: auto;
+        }
+        .btn-primary {
+            background-color: #4e54c8;
+            border-color: #4e54c8;
+        }
+        .btn-primary:hover {
+            background-color: #3f44a7;
         }
     </style>
 </head>
@@ -46,62 +55,66 @@
 
     <div class="header-gradient text-center">
         <div class="container">
-            <h1>📊 Google Sheets API Client</h1>
-            <p class="lead">จัดการข้อมูลจาก Google Sheets ด้วย AG Grid & Bootstrap 5</p>
+            <h1 class="fw-bold">📊 Google Sheets API Dashboard</h1>
+            <p class="lead">ระบบดึงข้อมูลและจัดการตารางด้วย AG Grid & Bootstrap 5</p>
         </div>
     </div>
 
     <div class="container mb-5">
         <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-4">🔍 ตัวกรองและตั้งค่า</h5>
+            <div class="card-body p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <span class="me-2">⚙️</span> ตั้งค่าการดึงข้อมูล
+                </h5>
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label">🔑 Token</label>
+                        <label class="form-label fw-semibold">🔑 API Token</label>
                         <input type="text" id="token" class="form-control" value="test_token_123">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">📄 Sheet Name</label>
+                        <label class="form-label fw-semibold">📄 ชื่อ Sheet</label>
                         <input type="text" id="sheetName" class="form-control" value="Sheet1">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">🆔 ID Filter</label>
-                        <input type="text" id="idFilter" class="form-control" placeholder="ค้นหาด้วย ID">
+                        <label class="form-label fw-semibold">🆔 ค้นหาด้วย ID (Optional)</label>
+                        <input type="text" id="idFilter" class="form-control" placeholder="ระบุ ID เฉพาะเจาะจง">
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">🔎 ค้นหาทั่วไป (Global Search)</label>
-                        <input type="text" id="globalSearch" class="form-control" placeholder="พิมพ์เพื่อค้นหา..." oninput="onQuickFilterChanged()">
+                    <div class="col-md-7">
+                        <label class="form-label fw-semibold">🔎 ค้นหาในตาราง (Quick Search)</label>
+                        <input type="text" id="globalSearch" class="form-control" placeholder="พิมพ์คำที่ต้องการค้นหา..." oninput="onQuickFilterChanged()">
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">📌 ขีดจำกัด (Limit)</label>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">📌 แถวสูงสุด</label>
                         <input type="number" id="limit" class="form-control" value="100">
                     </div>
                     <div class="col-md-3 d-flex align-items-end gap-2">
-                        <button class="btn btn-primary w-100" onclick="fetchData()">📥 ดึงข้อมูล</button>
-                        <button class="btn btn-outline-secondary" onclick="exportToCSV()">📊 CSV</button>
+                        <button class="btn btn-primary w-100 fw-bold" onclick="fetchData()">📥 ดึงข้อมูล</button>
+                        <button class="btn btn-outline-success" onclick="exportToCSV()" title="Export เป็น CSV">
+                            CSV
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <span class="fw-bold">📋 ตารางข้อมูล</span>
-                <span class="badge bg-primary" id="resultCount">0 รายการ</span>
+        <div class="card mb-4 overflow-hidden">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <span class="fw-bold text-secondary">📋 ตารางข้อมูลผลลัพธ์</span>
+                <span class="badge rounded-pill bg-primary" id="resultCount">0 รายการ</span>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 <div id="myGrid" class="ag-theme-alpine"></div>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header">
-                <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+            <div class="card-header bg-light">
+                <ul class="nav nav-tabs card-header-tabs" id="debugTab" role="tablist">
                     <li class="nav-item">
-                        <button class="nav-link active" id="raw-tab" data-bs-toggle="tab" data-bs-target="#raw" type="button">Raw JSON</button>
+                        <button class="nav-link active fw-bold" id="raw-tab" data-bs-toggle="tab" data-bs-target="#raw" type="button">📦 Raw JSON</button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link" id="curl-tab" data-bs-toggle="tab" data-bs-target="#curl" type="button">cURL Command</button>
+                        <button class="nav-link fw-bold" id="curl-tab" data-bs-toggle="tab" data-bs-target="#curl" type="button">🔧 cURL Command</button>
                     </li>
                 </ul>
             </div>
@@ -110,7 +123,7 @@
                     <pre class="json-view" id="rawJson">{}</pre>
                 </div>
                 <div class="tab-pane fade" id="curl">
-                    <pre class="json-view" id="curlCommand">Waiting for request...</pre>
+                    <pre class="json-view" id="curlCommand">-- รอดำเนินการดึงข้อมูล --</pre>
                 </div>
             </div>
         </div>
@@ -120,81 +133,45 @@
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
 
     <script>
+        // กำหนด URL ของ Google Apps Script ของคุณ
         const API_URL = 'https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec';
         
-        // 1. เปลี่ยนการประกาศตัวแปรเก็บ Grid
-let gridApi; 
+        let gridApi; // ตัวแปรสำหรับเก็บ Instance ของ AG Grid
 
-// 2. ปรับโครงสร้าง gridOptions ให้เข้ากับเวอร์ชันใหม่
-const gridOptions = {
-    columnDefs: [],
-    rowData: [],
-    defaultColDef: {
-        sortable: true,
-        filter: true,
-        resizable: true,
-        flex: 1,
-        minWidth: 100
-    },
-    pagination: true,
-    paginationPageSize: 10,
-    paginationPageSizeSelector: [10, 20, 50, 100], // เพิ่มตัวเลือกจำนวนแถวต่อหน้า
-};
+        // ตั้งค่าเริ่มต้นของ AG Grid
+        const gridOptions = {
+            columnDefs: [], // จะถูกสร้างอัตโนมัติเมื่อข้อมูลมาถึง
+            rowData: [],
+            defaultColDef: {
+                sortable: true,
+                filter: true,
+                resizable: true,
+                flex: 1,
+                minWidth: 120,
+                floatingFilter: true // เพิ่มแถวกรองด้านบนคอลัมน์
+            },
+            pagination: true,
+            paginationPageSize: 10,
+            paginationPageSizeSelector: [10, 20, 50, 100],
+            animateRows: true,
+            overlayLoadingTemplate: '<div class="spinner-border text-primary" role="status"></div><span class="ms-2"> กำลังโหลด...</span>'
+        };
 
-// 3. เปลี่ยนวิธีการสร้าง Grid (Initialize)
-const gridDiv = document.querySelector('#myGrid');
-// ใช้ agGrid.createGrid แทน new agGrid.Grid
-gridApi = agGrid.createGrid(gridDiv, gridOptions);
+        // เริ่มต้นสร้าง Grid เมื่อโหลดหน้าเว็บ
+        document.addEventListener('DOMContentLoaded', () => {
+            const gridDiv = document.querySelector('#myGrid');
+            // AG Grid v31+ ใช้ agGrid.createGrid
+            gridApi = agGrid.createGrid(gridDiv, gridOptions);
+            
+            // ดึงข้อมูลครั้งแรก
+            fetchData();
+        });
 
-// 4. การเรียกใช้ฟังก์ชันต่างๆ ให้เรียกผ่าน gridApi โดยตรง
-async function fetchData() {
-    gridApi.showLoadingOverlay(); // เปลี่ยนจาก gridOptions.api
-    
-    // ... payload code เหมือนเดิม ...
-
-    useJSONP(payload);
-}
-
-function handleResponse(response) {
-    if (response.success) {
-        const data = response.data || [];
-        
-        if (data.length > 0) {
-            const keys = Object.keys(data[0]);
-            const colDefs = keys.map(key => ({
-                field: key,
-                headerName: key.charAt(0).toUpperCase() + key.slice(1),
-                filter: 'agTextColumnFilter'
-            }));
-            gridApi.setGridOption('columnDefs', colDefs); // วิธีใหม่ในการอัปเดต Options
-        }
-
-        gridApi.setGridOption('rowData', data); // วิธีใหม่ในการใส่ข้อมูล
-        document.getElementById('resultCount').textContent = `${data.length} รายการ`;
-        document.getElementById('rawJson').textContent = JSON.stringify(response, null, 2);
-    } else {
-        alert('Error: ' + response.message);
-    }
-    gridApi.hideOverlay();
-}
-
-function onQuickFilterChanged() {
-    // ใช้ setGridOption สำหรับ quickFilter
-    gridApi.setGridOption('quickFilterText', document.getElementById('globalSearch').value);
-}
-
-function exportToCSV() {
-    gridApi.exportDataAsCsv({
-        fileName: 'google-sheets-data.csv'
-    });
-}
-
-        // Initialize AG Grid
-        const gridDiv = document.querySelector('#myGrid');
-        new agGrid.Grid(gridDiv, gridOptions);
-
+        // ฟังก์ชันดึงข้อมูล
         async function fetchData() {
-            gridOptions.api.showLoadingOverlay();
+            if (!gridApi) return;
+            
+            gridApi.showLoadingOverlay();
             
             const payload = {
                 token: document.getElementById('token').value,
@@ -208,7 +185,10 @@ function exportToCSV() {
             const idVal = document.getElementById('idFilter').value;
             if (idVal) payload.id = idVal;
 
+            // อัปเดต cURL สำหรับ Developer
             updateCurlCommand(payload);
+            
+            // เรียกใช้ JSONP (รองรับ CORS ของ Google Script)
             useJSONP(payload);
         }
 
@@ -216,8 +196,10 @@ function exportToCSV() {
             const callbackName = 'jsonp_callback_' + Date.now();
             window[callbackName] = function(response) {
                 handleResponse(response);
+                // ลบ script tag ออกหลังจากใช้งานเสร็จ
+                const scriptTag = document.getElementById('jsonp-script');
+                if (scriptTag) scriptTag.remove();
                 delete window[callbackName];
-                document.body.removeChild(script);
             };
 
             const params = new URLSearchParams({
@@ -227,6 +209,7 @@ function exportToCSV() {
             if (payload.id) params.append('id', payload.id);
 
             const script = document.createElement('script');
+            script.id = 'jsonp-script';
             script.src = `${API_URL}?${params.toString()}`;
             document.body.appendChild(script);
         }
@@ -235,33 +218,39 @@ function exportToCSV() {
             if (response.success) {
                 const data = response.data || [];
                 
-                // สร้าง Column Definitions อัตโนมัติจาก Key ของข้อมูล
+                // สร้างหัวตารางใหม่จาก Keys ของข้อมูล JSON
                 if (data.length > 0) {
                     const keys = Object.keys(data[0]);
                     const colDefs = keys.map(key => ({
                         field: key,
-                        headerName: key.charAt(0).toUpperCase() + key.slice(1),
-                        filter: 'agTextColumnFilter'
+                        headerName: key.charAt(0).toUpperCase() + key.slice(1)
                     }));
-                    gridOptions.api.setColumnDefs(colDefs);
+                    gridApi.setGridOption('columnDefs', colDefs);
                 }
 
-                gridOptions.api.setRowData(data);
+                // ใส่ข้อมูลลงในตาราง
+                gridApi.setGridOption('rowData', data);
+                
+                // อัปเดต UI
                 document.getElementById('resultCount').textContent = `${data.length} รายการ`;
                 document.getElementById('rawJson').textContent = JSON.stringify(response, null, 2);
             } else {
-                alert('Error: ' + response.message);
+                alert('เกิดข้อผิดพลาด: ' + (response.message || 'ไม่ทราบสาเหตุ'));
+                gridApi.setGridOption('rowData', []);
             }
-            gridOptions.api.hideOverlay();
+            gridApi.hideOverlay();
         }
 
+        // ฟังก์ชันค้นหาแบบเร็ว
         function onQuickFilterChanged() {
-            gridOptions.api.setQuickFilter(document.getElementById('globalSearch').value);
+            const searchVal = document.getElementById('globalSearch').value;
+            gridApi.setGridOption('quickFilterText', searchVal);
         }
 
+        // ฟังก์ชัน Export ข้อมูลในตารางเป็น CSV
         function exportToCSV() {
-            gridOptions.api.exportDataAsCsv({
-                fileName: 'google-sheets-data.csv'
+            gridApi.exportDataAsCsv({
+                fileName: `export_data_${new Date().toISOString().slice(0,10)}.csv`
             });
         }
 
@@ -269,9 +258,6 @@ function exportToCSV() {
             const command = `curl -X POST "${API_URL}" \\\n -H "Content-Type: application/json" \\\n -d '${JSON.stringify(payload, null, 2)}'`;
             document.getElementById('curlCommand').textContent = command;
         }
-
-        // โหลดข้อมูลอัตโนมัติเมื่อเปิดหน้า
-        window.onload = fetchData;
     </script>
 </body>
 </html>
