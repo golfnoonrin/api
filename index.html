@@ -122,20 +122,72 @@
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbzDv31Nv4ikHzovaYl2As5VEe7qpArBoPHap0ZSdGmfhKByvCw-b3p89-YEiARdKApf/exec';
         
-        let gridOptions = {
-            columnDefs: [],
-            rowData: [],
-            defaultColDef: {
-                sortable: true,
-                filter: true,
-                resizable: true,
-                flex: 1,
-                minWidth: 100
-            },
-            pagination: true,
-            paginationPageSize: 10,
-            overlayLoadingTemplate: '<span class="ag-overlay-loading-center">กำลังดึงข้อมูลจาก Google Sheets...</span>',
-        };
+        // 1. เปลี่ยนการประกาศตัวแปรเก็บ Grid
+let gridApi; 
+
+// 2. ปรับโครงสร้าง gridOptions ให้เข้ากับเวอร์ชันใหม่
+const gridOptions = {
+    columnDefs: [],
+    rowData: [],
+    defaultColDef: {
+        sortable: true,
+        filter: true,
+        resizable: true,
+        flex: 1,
+        minWidth: 100
+    },
+    pagination: true,
+    paginationPageSize: 10,
+    paginationPageSizeSelector: [10, 20, 50, 100], // เพิ่มตัวเลือกจำนวนแถวต่อหน้า
+};
+
+// 3. เปลี่ยนวิธีการสร้าง Grid (Initialize)
+const gridDiv = document.querySelector('#myGrid');
+// ใช้ agGrid.createGrid แทน new agGrid.Grid
+gridApi = agGrid.createGrid(gridDiv, gridOptions);
+
+// 4. การเรียกใช้ฟังก์ชันต่างๆ ให้เรียกผ่าน gridApi โดยตรง
+async function fetchData() {
+    gridApi.showLoadingOverlay(); // เปลี่ยนจาก gridOptions.api
+    
+    // ... payload code เหมือนเดิม ...
+
+    useJSONP(payload);
+}
+
+function handleResponse(response) {
+    if (response.success) {
+        const data = response.data || [];
+        
+        if (data.length > 0) {
+            const keys = Object.keys(data[0]);
+            const colDefs = keys.map(key => ({
+                field: key,
+                headerName: key.charAt(0).toUpperCase() + key.slice(1),
+                filter: 'agTextColumnFilter'
+            }));
+            gridApi.setGridOption('columnDefs', colDefs); // วิธีใหม่ในการอัปเดต Options
+        }
+
+        gridApi.setGridOption('rowData', data); // วิธีใหม่ในการใส่ข้อมูล
+        document.getElementById('resultCount').textContent = `${data.length} รายการ`;
+        document.getElementById('rawJson').textContent = JSON.stringify(response, null, 2);
+    } else {
+        alert('Error: ' + response.message);
+    }
+    gridApi.hideOverlay();
+}
+
+function onQuickFilterChanged() {
+    // ใช้ setGridOption สำหรับ quickFilter
+    gridApi.setGridOption('quickFilterText', document.getElementById('globalSearch').value);
+}
+
+function exportToCSV() {
+    gridApi.exportDataAsCsv({
+        fileName: 'google-sheets-data.csv'
+    });
+}
 
         // Initialize AG Grid
         const gridDiv = document.querySelector('#myGrid');
